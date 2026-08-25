@@ -1,72 +1,79 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Leg press movement demo">
 <defs>
   <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#0b0d11"/><stop offset="1" stop-color="#11151c"/></linearGradient>
-  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#eef2f6"/><stop offset=".45" stop-color="#aeb6c1"/><stop offset="1" stop-color="#68717d"/></linearGradient>
-  <linearGradient id="darkmetal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#59616d"/><stop offset="1" stop-color="#262d36"/></linearGradient>
-  <linearGradient id="quad" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ff6758"/><stop offset="1" stop-color="#db3f34"/></linearGradient>
-  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/><feColorMatrix values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .45 0"/></filter>
+  <linearGradient id="metal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#f4f6f8"/><stop offset=".42" stop-color="#bac2cc"/><stop offset="1" stop-color="#707a86"/></linearGradient>
+  <linearGradient id="metalRear" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#aeb7c2"/><stop offset="1" stop-color="#69737f"/></linearGradient>
+  <linearGradient id="darkmetal" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#59626f"/><stop offset="1" stop-color="#242b34"/></linearGradient>
+  <linearGradient id="quad" x1="0" y1="0" x2="1" y2="0"><stop stop-color="#ff7061"/><stop offset="1" stop-color="#e34739"/></linearGradient>
+  <filter id="shadow" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="5"/></filter>
 </defs>
 <rect width="640" height="360" rx="28" fill="url(#bg)"/>
 <text x="26" y="34" fill="#aeb6c1" font-family="system-ui,-apple-system,sans-serif" font-weight="800" font-size="18" letter-spacing="1.4">LEG PRESS</text>
 <line x1="26" y1="48" x2="614" y2="48" stroke="#242a32"/>
 
-<!-- machine frame -->
-<path d="M440 316 L576 68" stroke="#343c47" stroke-width="17" stroke-linecap="round"/>
-<path d="M458 320 L594 72" stroke="#171c22" stroke-width="6" stroke-linecap="round"/>
-<path d="M395 322 H604" stroke="#343c47" stroke-width="12" stroke-linecap="round"/>
-<path d="M222 318 H390" stroke="#343c47" stroke-width="13" stroke-linecap="round"/>
-<path d="M246 304 L316 210" stroke="#4a535f" stroke-width="22" stroke-linecap="round"/>
-<path d="M236 297 L307 203" stroke="#1a2027" stroke-width="13" stroke-linecap="round"/>
-<path d="M284 251 L335 282" stroke="#242b34" stroke-width="26" stroke-linecap="round"/>
+<!-- machine -->
+<path d="M444 316 L578 72" stroke="#3b4450" stroke-width="18" stroke-linecap="round"/>
+<path d="M459 320 L593 76" stroke="#171c22" stroke-width="6" stroke-linecap="round"/>
+<path d="M400 322 H606" stroke="#3b4450" stroke-width="12" stroke-linecap="round"/>
+<path d="M220 318 H395" stroke="#3b4450" stroke-width="13" stroke-linecap="round"/>
+<path d="M244 303 L313 211" stroke="#4d5763" stroke-width="23" stroke-linecap="round"/>
+<path d="M236 297 L306 204" stroke="#181e25" stroke-width="13" stroke-linecap="round"/>
+<path d="M279 248 L336 282" stroke="#252c35" stroke-width="30" stroke-linecap="round"/>
+<path d="M302 216 L353 248" stroke="#343c47" stroke-width="10" stroke-linecap="round" opacity=".9"/>
 
-<!-- sled + platform -->
+<!-- sled -->
 <g>
-  <rect x="486" y="92" width="96" height="135" rx="12" fill="url(#darkmetal)" stroke="#65707f" stroke-width="5" transform="rotate(18 534 160)"/>
-  <g stroke="#6a7480" stroke-width="2" opacity=".65"><line x1="510" y1="116" x2="565" y2="132"/><line x1="504" y1="139" x2="559" y2="155"/><line x1="498" y1="162" x2="553" y2="178"/><line x1="492" y1="185" x2="547" y2="201"/></g>
-  <animateTransform attributeName="transform" type="translate" values="0 0;42 -46;42 -46;0 0" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1"/>
+  <rect x="486" y="92" width="96" height="135" rx="12" fill="url(#darkmetal)" stroke="#6b7684" stroke-width="5" transform="rotate(18 534 160)"/>
+  <g stroke="#75808d" stroke-width="2" opacity=".65"><line x1="510" y1="116" x2="565" y2="132"/><line x1="504" y1="139" x2="559" y2="155"/><line x1="498" y1="162" x2="553" y2="178"/><line x1="492" y1="185" x2="547" y2="201"/></g>
+  <animateTransform attributeName="transform" type="translate" values="0 0;42 -46;42 -46;0 0" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .2 1;.42 0 .2 1;.42 0 .2 1"/>
 </g>
 
-<!-- athlete shadow -->
-<ellipse cx="338" cy="309" rx="120" ry="17" fill="#000" opacity=".35" filter="url(#shadow)"/>
+<ellipse cx="340" cy="309" rx="122" ry="15" fill="#000" opacity=".25" filter="url(#shadow)"/>
 
-<!-- torso / head fixed -->
-<path d="M310 203 C286 181 274 158 284 139 C294 121 319 121 337 135 C352 147 358 169 349 191 L331 226 Z" fill="url(#metal)" stroke="#59626e" stroke-width="3"/>
-<ellipse cx="294" cy="122" rx="22" ry="26" fill="url(#metal)" stroke="#59626e" stroke-width="3" transform="rotate(-24 294 122)"/>
-<path d="M320 184 C300 204 285 225 271 248" fill="none" stroke="#bfc6cf" stroke-width="18" stroke-linecap="round"/>
-<circle cx="270" cy="249" r="8" fill="#929ba7"/>
-<path d="M329 185 C317 205 309 226 306 246" fill="none" stroke="#9099a5" stroke-width="15" stroke-linecap="round" opacity=".9"/>
+<!-- fixed torso seated into pad -->
+<path d="M311 205 C292 192 278 174 279 154 C280 137 291 126 306 127 C329 128 349 145 355 166 C359 182 352 199 338 214 L330 228 L312 224 Z" fill="url(#metal)" stroke="#59626e" stroke-width="3"/>
+<path d="M300 147 C292 159 293 180 307 199" fill="none" stroke="#e7ebef" stroke-width="3" opacity=".45"/>
+<ellipse cx="294" cy="119" rx="21" ry="25" fill="url(#metal)" stroke="#59626e" stroke-width="3" transform="rotate(-21 294 119)"/>
+<path d="M320 183 C301 203 286 225 272 248" fill="none" stroke="#c3cad2" stroke-width="17" stroke-linecap="round"/>
+<path d="M332 187 C319 205 311 225 307 245" fill="none" stroke="#929ca8" stroke-width="14" stroke-linecap="round"/>
+<circle cx="271" cy="249" r="8" fill="#9aa4b0"/>
+<ellipse cx="324" cy="226" rx="17" ry="13" fill="#858f9b" stroke="#59626e" stroke-width="2"/>
 
 <!-- rear leg -->
-<path d="M329 226 Q365 231 404 204" fill="none" stroke="#8e98a4" stroke-width="27" stroke-linecap="round">
-  <animate attributeName="d" values="M329 226 Q365 231 404 204;M329 226 Q376 202 430 168;M329 226 Q376 202 430 168;M329 226 Q365 231 404 204" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1"/>
+<path d="M326 226 C352 226 378 220 403 205" fill="none" stroke="url(#metalRear)" stroke-width="28" stroke-linecap="round">
+ <animate attributeName="d" values="M326 226 C352 226 378 220 403 205;M326 226 C358 216 394 195 431 169;M326 226 C358 216 394 195 431 169;M326 226 C352 226 378 220 403 205" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .2 1;.42 0 .2 1;.42 0 .2 1"/>
 </path>
-<path d="M404 204 Q439 186 470 158" fill="none" stroke="#7a8490" stroke-width="22" stroke-linecap="round">
-  <animate attributeName="d" values="M404 204 Q439 186 470 158;M430 168 Q475 143 522 111;M430 168 Q475 143 522 111;M404 204 Q439 186 470 158" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1"/>
-</path>
-
-<!-- front leg -->
-<path d="M323 230 Q360 238 397 211" fill="none" stroke="url(#metal)" stroke-width="31" stroke-linecap="round">
-  <animate attributeName="d" values="M323 230 Q360 238 397 211;M323 230 Q372 207 425 174;M323 230 Q372 207 425 174;M323 230 Q360 238 397 211" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1"/>
-</path>
-<path d="M397 211 Q435 190 466 162" fill="none" stroke="url(#metal)" stroke-width="25" stroke-linecap="round">
-  <animate attributeName="d" values="M397 211 Q435 190 466 162;M425 174 Q471 146 517 116;M425 174 Q471 146 517 116;M397 211 Q435 190 466 162" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1"/>
+<path d="M403 205 C431 193 451 177 470 158" fill="none" stroke="#78838f" stroke-width="23" stroke-linecap="round">
+ <animate attributeName="d" values="M403 205 C431 193 451 177 470 158;M431 169 C463 153 491 133 522 111;M431 169 C463 153 491 133 522 111;M403 205 C431 193 451 177 470 158" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .2 1;.42 0 .2 1;.42 0 .2 1"/>
 </path>
 
-<!-- quad emphasis locked to thigh -->
-<path d="M329 230 Q359 234 390 214" fill="none" stroke="url(#quad)" stroke-width="12" stroke-linecap="round" opacity=".95">
-  <animate attributeName="d" values="M329 230 Q359 234 390 214;M329 230 Q368 210 416 180;M329 230 Q368 210 416 180;M329 230 Q359 234 390 214" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1"/>
+<!-- front thigh -->
+<path d="M323 229 C348 231 374 225 398 211" fill="none" stroke="url(#metal)" stroke-width="32" stroke-linecap="round">
+ <animate attributeName="d" values="M323 229 C348 231 374 225 398 211;M323 229 C356 218 391 198 425 174;M323 229 C356 218 391 198 425 174;M323 229 C348 231 374 225 398 211" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .2 1;.42 0 .2 1;.42 0 .2 1"/>
+</path>
+<!-- front shin -->
+<path d="M398 211 C425 198 447 180 466 162" fill="none" stroke="url(#metal)" stroke-width="26" stroke-linecap="round">
+ <animate attributeName="d" values="M398 211 C425 198 447 180 466 162;M425 174 C458 156 487 136 517 116;M425 174 C458 156 487 136 517 116;M398 211 C425 198 447 180 466 162" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .2 1;.42 0 .2 1;.42 0 .2 1"/>
 </path>
 
-<!-- feet -->
-<path d="M463 161 Q480 155 493 146" fill="none" stroke="#dce1e7" stroke-width="14" stroke-linecap="round">
-  <animate attributeName="d" values="M463 161 Q480 155 493 146;M515 116 Q532 109 545 99;M515 116 Q532 109 545 99;M463 161 Q480 155 493 146" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1"/>
-</path>
-<path d="M468 171 Q486 164 498 155" fill="none" stroke="#b6bec8" stroke-width="12" stroke-linecap="round">
-  <animate attributeName="d" values="M468 171 Q486 164 498 155;M522 126 Q539 118 551 108;M522 126 Q539 118 551 108;M468 171 Q486 164 498 155" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".4 0 .2 1;.4 0 .2 1;.4 0 .2 1"/>
+<!-- quad muscle overlay -->
+<path d="M332 228 C351 229 370 225 389 214" fill="none" stroke="url(#quad)" stroke-width="13" stroke-linecap="round" opacity=".98">
+ <animate attributeName="d" values="M332 228 C351 229 370 225 389 214;M332 228 C357 217 385 201 414 181;M332 228 C357 217 385 201 414 181;M332 228 C351 229 370 225 389 214" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .2 1;.42 0 .2 1;.42 0 .2 1"/>
 </path>
 
-<!-- knee markers subtle -->
-<circle cx="397" cy="211" r="5" fill="#f3f5f7" opacity=".65"><animate attributeName="cx" values="397;425;425;397" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite"/><animate attributeName="cy" values="211;174;174;211" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite"/></circle>
+<!-- knee joint -->
+<ellipse cx="398" cy="211" rx="9" ry="8" fill="#d9dee4" stroke="#69737f" stroke-width="2">
+ <animate attributeName="cx" values="398;425;425;398" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite"/>
+ <animate attributeName="cy" values="211;174;174;211" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite"/>
+</ellipse>
+
+<!-- shoes: broader sole, planted on sled -->
+<path d="M463 160 C475 155 485 150 494 143 L507 150 C498 158 485 166 470 171 Z" fill="#e6e9ed" stroke="#737d89" stroke-width="2">
+ <animate attributeName="d" values="M463 160 C475 155 485 150 494 143 L507 150 C498 158 485 166 470 171 Z;M514 115 C526 109 537 104 546 97 L559 104 C549 113 536 121 521 126 Z;M514 115 C526 109 537 104 546 97 L559 104 C549 113 536 121 521 126 Z;M463 160 C475 155 485 150 494 143 L507 150 C498 158 485 166 470 171 Z" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .2 1;.42 0 .2 1;.42 0 .2 1"/>
+</path>
+<path d="M469 170 C481 165 491 160 500 153 L512 160 C503 169 491 176 476 181 Z" fill="#c2c9d1" stroke="#69737f" stroke-width="2">
+ <animate attributeName="d" values="M469 170 C481 165 491 160 500 153 L512 160 C503 169 491 176 476 181 Z;M521 125 C533 119 543 114 552 107 L564 114 C555 123 543 131 528 136 Z;M521 125 C533 119 543 114 552 107 L564 114 C555 123 543 131 528 136 Z;M469 170 C481 165 491 160 500 153 L512 160 C503 169 491 176 476 181 Z" keyTimes="0;.45;.58;1" dur="3.6s" repeatCount="indefinite" calcMode="spline" keySplines=".42 0 .2 1;.42 0 .2 1;.42 0 .2 1"/>
+</path>
 
 <text x="26" y="334" fill="#9ca5b1" font-family="system-ui,-apple-system,sans-serif" font-size="15">Lower under control • Drive through the whole foot</text>
 </svg>
