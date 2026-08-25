@@ -1,9 +1,9 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 360" role="img" aria-label="Leg press movement demo">
 <defs>
-  <linearGradient id="body" x1="0" x2="1"><stop offset="0" stop-color="#68707c"/><stop offset=".5" stop-color="#c5cad1"/><stop offset="1" stop-color="#5f6672"/></linearGradient>
-  <linearGradient id="limb" x1="0" x2="1"><stop offset="0" stop-color="#858d99"/><stop offset=".55" stop-color="#d2d6dc"/><stop offset="1" stop-color="#747c88"/></linearGradient>
-  <linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="#353b45"/><stop offset=".5" stop-color="#59616d"/><stop offset="1" stop-color="#2e343d"/></linearGradient>
-  <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity=".35"/></filter>
+  <linearGradient id="body" x1="0" x2="1"><stop offset="0" stop-color="#5f6671"/><stop offset=".5" stop-color="#c8cdd4"/><stop offset="1" stop-color="#555d68"/></linearGradient>
+  <linearGradient id="limb" x1="0" x2="1"><stop offset="0" stop-color="#737b87"/><stop offset=".52" stop-color="#d6dae0"/><stop offset="1" stop-color="#69717d"/></linearGradient>
+  <linearGradient id="metal" x1="0" x2="1"><stop offset="0" stop-color="#323842"/><stop offset=".5" stop-color="#59616d"/><stop offset="1" stop-color="#292f38"/></linearGradient>
+  <filter id="shadow" x="-25%" y="-25%" width="150%" height="150%"><feDropShadow dx="0" dy="4" stdDeviation="4" flood-color="#000" flood-opacity=".38"/></filter>
 </defs>
 <rect width="640" height="360" rx="28" fill="#0b0d11"/>
 <g opacity=".35" stroke="#242932"><line x1="40" y1="300" x2="600" y2="300"/><line x1="40" y1="60" x2="600" y2="60"/></g>
@@ -14,56 +14,58 @@
   <path d="M172 292 L306 292" stroke="#404650" stroke-width="16" stroke-linecap="round"/>
   <path d="M196 282 L287 181" stroke="#505865" stroke-width="18" stroke-linecap="round"/>
   <path d="M278 183 L326 142" stroke="#59616d" stroke-width="12" stroke-linecap="round"/>
-  <rect x="437" y="72" width="22" height="216" rx="10" transform="rotate(16 448 180)" fill="url(#metal)"/>
-  <rect x="454" y="83" width="104" height="189" rx="16" transform="rotate(16 506 178)" fill="#2e343d" stroke="#666f7d" stroke-width="4"/>
-  <path d="M477 109 L532 125 M468 144 L523 160 M458 180 L513 196 M448 216 L503 232" stroke="#3f4651" stroke-width="3" opacity=".8"/>
+  <rect x="438" y="72" width="22" height="216" rx="10" transform="rotate(16 449 180)" fill="url(#metal)"/>
+  <rect x="455" y="82" width="106" height="190" rx="16" transform="rotate(16 508 177)" fill="#2e343d" stroke="#6b7481" stroke-width="4"/>
+  <path d="M477 109 L535 126 M468 144 L526 161 M458 180 L516 197 M448 216 L506 233" stroke="#414853" stroke-width="3" opacity=".85"/>
 </g>
 
-<!-- athlete torso and head -->
+<!-- athlete body anchored to pad -->
 <g stroke-linecap="round" stroke-linejoin="round" filter="url(#shadow)">
-  <ellipse cx="307" cy="146" rx="20" ry="22" fill="url(#body)" stroke="#3b414a" stroke-width="2"/>
-  <path d="M292 164 Q274 179 262 199 Q254 211 247 221" stroke="url(#body)" stroke-width="30" fill="none"/>
-  <path d="M281 173 Q266 188 255 207" stroke="#e2e5e9" stroke-opacity=".22" stroke-width="2" fill="none"/>
-  <path d="M250 219 L221 255" stroke="url(#body)" stroke-width="23"/>
-  <path d="M221 255 L196 287" stroke="url(#body)" stroke-width="17"/>
-  <path d="M271 189 Q285 199 299 207" stroke="#8e96a2" stroke-width="14"/>
+  <ellipse cx="306" cy="147" rx="19" ry="21" fill="url(#body)" stroke="#3a4049" stroke-width="2"/>
+  <path d="M291 165 Q273 181 261 201 Q253 213 247 221" stroke="url(#body)" stroke-width="31" fill="none"/>
+  <path d="M280 173 Q266 189 255 208" stroke="#eef1f4" stroke-opacity=".18" stroke-width="2" fill="none"/>
+  <path d="M249 220 L223 254" stroke="url(#body)" stroke-width="22"/>
+  <path d="M223 254 L198 287" stroke="url(#body)" stroke-width="16"/>
+  <path d="M271 189 Q285 198 299 207" stroke="#8b939f" stroke-width="14"/>
+  <path d="M261 211 Q267 220 276 226" stroke="#ef5a4c" stroke-opacity=".58" stroke-width="8"/>
 </g>
 
-<!-- animated legs -->
+<!-- animated hips / thighs / shins -->
 <g stroke-linecap="round" stroke-linejoin="round" filter="url(#shadow)">
-  <g>
-    <path d="M252 216 L329 232 L396 180" stroke="url(#limb)" stroke-width="24" fill="none">
-      <animate attributeName="d" values="M252 216 L329 232 L396 180;M252 216 L360 220 L435 176;M252 216 L329 232 L396 180" dur="3s" calcMode="spline" keySplines=".42 0 .58 1;.42 0 .58 1" repeatCount="indefinite"/>
+  <!-- rear leg -->
+  <path d="M252 216 L329 232" stroke="url(#limb)" stroke-width="27" fill="none">
+    <animate attributeName="d" values="M252 216 L329 232;M252 216 L360 220;M252 216 L329 232" dur="3s" calcMode="spline" keySplines=".42 0 .58 1;.42 0 .58 1" repeatCount="indefinite"/>
+  </path>
+  <path d="M329 232 L396 180" stroke="url(#limb)" stroke-width="23" fill="none">
+    <animate attributeName="d" values="M329 232 L396 180;M360 220 L435 176;M329 232 L396 180" dur="3s" calcMode="spline" keySplines=".42 0 .58 1;.42 0 .58 1" repeatCount="indefinite"/>
+  </path>
+  <!-- front leg -->
+  <path d="M254 224 L329 249" stroke="url(#limb)" stroke-width="27" fill="none">
+    <animate attributeName="d" values="M254 224 L329 249;M254 224 L360 238;M254 224 L329 249" dur="3s" calcMode="spline" keySplines=".42 0 .58 1;.42 0 .58 1" repeatCount="indefinite"/>
+  </path>
+  <path d="M329 249 L399 198" stroke="url(#limb)" stroke-width="23" fill="none">
+    <animate attributeName="d" values="M329 249 L399 198;M360 238 L438 193;M329 249 L399 198" dur="3s" calcMode="spline" keySplines=".42 0 .58 1;.42 0 .58 1" repeatCount="indefinite"/>
+  </path>
+
+  <!-- quad highlights that travel with thigh segments -->
+  <path d="M273 220 Q301 224 322 230" stroke="#ef5a4c" stroke-width="8" opacity=".9" fill="none">
+    <animate attributeName="d" values="M273 220 Q301 224 322 230;M273 220 Q315 219 349 220;M273 220 Q301 224 322 230" dur="3s" repeatCount="indefinite"/>
+  </path>
+  <path d="M275 228 Q301 235 322 246" stroke="#ef5a4c" stroke-width="8" opacity=".78" fill="none">
+    <animate attributeName="d" values="M275 228 Q301 235 322 246;M275 228 Q317 231 350 238;M275 228 Q301 235 322 246" dur="3s" repeatCount="indefinite"/>
+  </path>
+
+  <!-- connected shoes / full-foot contact -->
+  <g fill="#d8dde3" stroke="#555d67" stroke-width="2">
+    <path d="M389 173 q12 -6 21 1 l10 6 q3 2 1 6 q-2 4 -7 3 l-18 -3 q-10 -2 -13 -7 q-2 -4 6 -6z">
+      <animate attributeName="d" values="M389 173 q12 -6 21 1 l10 6 q3 2 1 6 q-2 4 -7 3 l-18 -3 q-10 -2 -13 -7 q-2 -4 6 -6z;M428 169 q12 -6 21 1 l10 6 q3 2 1 6 q-2 4 -7 3 l-18 -3 q-10 -2 -13 -7 q-2 -4 6 -6z;M389 173 q12 -6 21 1 l10 6 q3 2 1 6 q-2 4 -7 3 l-18 -3 q-10 -2 -13 -7 q-2 -4 6 -6z" dur="3s" repeatCount="indefinite"/>
     </path>
-    <path d="M254 224 L329 249 L399 198" stroke="url(#limb)" stroke-width="24" fill="none">
-      <animate attributeName="d" values="M254 224 L329 249 L399 198;M254 224 L360 238 L438 193;M254 224 L329 249 L399 198" dur="3s" calcMode="spline" keySplines=".42 0 .58 1;.42 0 .58 1" repeatCount="indefinite"/>
+    <path d="M392 191 q12 -6 21 1 l10 6 q3 2 1 6 q-2 4 -7 3 l-18 -3 q-10 -2 -13 -7 q-2 -4 6 -6z">
+      <animate attributeName="d" values="M392 191 q12 -6 21 1 l10 6 q3 2 1 6 q-2 4 -7 3 l-18 -3 q-10 -2 -13 -7 q-2 -4 6 -6z;M431 186 q12 -6 21 1 l10 6 q3 2 1 6 q-2 4 -7 3 l-18 -3 q-10 -2 -13 -7 q-2 -4 6 -6z;M392 191 q12 -6 21 1 l10 6 q3 2 1 6 q-2 4 -7 3 l-18 -3 q-10 -2 -13 -7 q-2 -4 6 -6z" dur="3s" repeatCount="indefinite"/>
     </path>
-  </g>
-  <g fill="#ef5a4c" stroke="#3a1b18" stroke-width="2">
-    <ellipse cx="319" cy="230" rx="17" ry="10" transform="rotate(10 319 230)">
-      <animate attributeName="cx" values="319;350;319" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="230;219;230" dur="3s" repeatCount="indefinite"/>
-    </ellipse>
-    <ellipse cx="320" cy="247" rx="17" ry="10" transform="rotate(12 320 247)">
-      <animate attributeName="cx" values="320;350;320" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="247;236;247" dur="3s" repeatCount="indefinite"/>
-    </ellipse>
-  </g>
-  <g fill="#cbd1d8" stroke="#535a65" stroke-width="2">
-    <ellipse cx="396" cy="180" rx="13" ry="7" transform="rotate(-20 396 180)">
-      <animate attributeName="cx" values="396;435;396" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="180;176;180" dur="3s" repeatCount="indefinite"/>
-    </ellipse>
-    <ellipse cx="399" cy="198" rx="13" ry="7" transform="rotate(-20 399 198)">
-      <animate attributeName="cx" values="399;438;399" dur="3s" repeatCount="indefinite"/>
-      <animate attributeName="cy" values="198;193;198" dur="3s" repeatCount="indefinite"/>
-    </ellipse>
   </g>
 </g>
 
-<!-- target cue -->
-<g fill="none" stroke="#ef5a4c" stroke-width="4" opacity=".85">
-  <path d="M303 218 Q323 225 342 219"/>
-  <path d="M302 239 Q323 247 343 238"/>
-</g>
+<!-- subtle knee tracking cue, not knee highlight -->
+<g fill="none" stroke="#ef5a4c" stroke-width="2.5" opacity=".45"><path d="M327 232 q8 3 14 0"/><path d="M327 249 q8 3 14 0"/></g>
 </svg>
