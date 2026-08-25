@@ -1,31 +1,43 @@
-(()=>{const NS='http://www.w3.org/2000/svg';const C={primary:'#ef5a4c',secondary:'#e6b94f',support:'#438ee8'};const MAP={
-'Incline Dumbbell Press':['front',{upperChest:'primary',frontDelts:'secondary',triceps:'secondary',core:'support'}],
-'Flat Dumbbell Press':['front',{chest:'primary',frontDelts:'secondary',triceps:'secondary',core:'support'}],
-'Dumbbell Lateral Raise':['front',{sideDelts:'primary',frontDelts:'secondary',core:'support'}],
-'Rope Triceps Pushdown':['back',{triceps:'primary',lowerBack:'support'}],
-'Cable Fly':['front',{chest:'primary',frontDelts:'secondary',core:'support'}],
-'Cable Crunch':['front',{core:'primary'}],
-'Lat Pulldown':['back',{lats:'primary',upperBack:'secondary',lowerBack:'support'}],
-'Chest-Supported Row':['back',{upperBack:'primary',lats:'secondary',rearDelts:'secondary',lowerBack:'support'}],
-'Single-Arm Cable Row':['back',{lats:'primary',upperBack:'secondary',rearDelts:'secondary',lowerBack:'support'}],
-'Face Pull':['back',{rearDelts:'primary',upperBack:'secondary',lowerBack:'support'}],
-'Dumbbell Curl':['front',{biceps:'primary',core:'support'}],
-'Hammer Curl':['front',{biceps:'primary',core:'support'}],
-'Leg Press':['both',{front:{quads:'primary',core:'support'},back:{glutes:'secondary'}}],
-'Romanian Deadlift':['back',{hamstrings:'primary',glutes:'secondary',lowerBack:'support'}],
-'Leg Extension':['front',{quads:'primary',core:'support'}],
-'Seated Leg Curl':['back',{hamstrings:'primary',calves:'secondary',lowerBack:'support'}],
-'Standing Calf Raise':['back',{calves:'primary',lowerBack:'support'}],
-'Hanging Knee Raise':['front',{core:'primary'}]
+(()=>{
+const ASSETS={
+  'Incline Dumbbell Press':'assets/anatomy/incline-db-press.jpg',
+  'Flat Dumbbell Press':'assets/anatomy/barbell-bench.jpg',
+  'Dumbbell Lateral Raise':'assets/anatomy/lateral-raise.jpg',
+  'Rope Triceps Pushdown':'assets/anatomy/triceps-pushdown.jpg',
+  'Cable Fly':'assets/anatomy/cable-fly.jpg',
+  'Leg Press':'assets/anatomy/leg-press.jpg',
+  'Romanian Deadlift':'assets/anatomy/rdl.jpg',
+  'Leg Extension':'assets/anatomy/leg-extension.jpg',
+  'Seated Leg Curl':'assets/anatomy/leg-curl.jpg',
+  'Standing Calf Raise':'assets/anatomy/calf-raise.jpg'
 };
-function el(s,t,a){const e=document.createElementNS(NS,t);Object.entries(a||{}).forEach(([k,v])=>e.setAttribute(k,v));s.appendChild(e);return e}
-function defs(s){const d=el(s,'defs',{});const skin=el(d,'linearGradient',{id:'skin',x1:'0',x2:'1'});el(skin,'stop',{offset:'0','stop-color':'#535963'});el(skin,'stop',{offset:'.28','stop-color':'#9aa0a8'});el(skin,'stop',{offset:'.5','stop-color':'#c1c5ca'});el(skin,'stop',{offset:'.72','stop-color':'#8f959e'});el(skin,'stop',{offset:'1','stop-color':'#4a5059'});const hi=el(d,'linearGradient',{id:'muscleHi',x1:'0',x2:'0',y1:'0',y2:'1'});el(hi,'stop',{offset:'0','stop-color':'#ffffff','stop-opacity':'.34'});el(hi,'stop',{offset:'.55','stop-color':'#ffffff','stop-opacity':'.08'});el(hi,'stop',{offset:'1','stop-color':'#000000','stop-opacity':'.12'});const sh=el(d,'filter',{id:'softShadow',x:'-20%',y:'-20%',width:'140%',height:'140%'});el(sh,'feDropShadow',{dx:'0',dy:'2',stdDeviation:'1.5','flood-color':'#000','flood-opacity':'.35'})}
-function base(view){const s=document.createElementNS(NS,'svg');s.setAttribute('viewBox','0 0 180 250');s.setAttribute('class','canonical-anatomy pro-anatomy');defs(s);el(s,'rect',{width:180,height:250,rx:24,fill:'#101217',class:'anatomy-bg'});el(s,'ellipse',{cx:90,cy:23,rx:12.5,ry:17.5,fill:'url(#skin)',stroke:'#252932','stroke-width':1.8});el(s,'path',{d:'M83 41 Q90 46 97 41 L106 49 Q119 51 128 62 L136 82 L144 121 Q147 136 138 140 Q130 142 126 128 L118 98 L112 81 L109 112 Q108 132 102 145 L105 164 L114 203 L116 232 Q116 241 109 242 Q101 242 98 232 L93 184 H87 L82 232 Q79 242 71 242 Q64 241 64 232 L66 203 L75 164 L78 145 Q72 132 71 112 L68 81 L62 98 L54 128 Q50 142 42 140 Q33 136 36 121 L44 82 L52 62 Q61 51 74 49Z',fill:'url(#skin)',stroke:'#252932','stroke-width':1.8,filter:'url(#softShadow)'});if(view==='front'){el(s,'path',{d:'M76 53 Q90 46 104 53',fill:'none',stroke:'#dfe2e6','stroke-opacity':.42,'stroke-width':1.1});el(s,'path',{d:'M90 49 V142',fill:'none',stroke:'#dfe2e6','stroke-opacity':.2});el(s,'path',{d:'M76 88 Q90 94 104 88',fill:'none',stroke:'#dfe2e6','stroke-opacity':.15});el(s,'path',{d:'M77 145 Q90 151 103 145',fill:'none',stroke:'#dfe2e6','stroke-opacity':.17})}else{el(s,'path',{d:'M90 48 V147',fill:'none',stroke:'#dfe2e6','stroke-opacity':.3});el(s,'path',{d:'M75 56 Q90 67 105 56',fill:'none',stroke:'#dfe2e6','stroke-opacity':.28});el(s,'path',{d:'M72 89 Q90 102 108 89',fill:'none',stroke:'#dfe2e6','stroke-opacity':.14})}return s}
-function region(s,type,a,role){el(s,type,{...a,fill:C[role]||C.primary,stroke:'#17191f','stroke-width':.72});el(s,type,{...a,fill:'url(#muscleHi)','pointer-events':'none'});return s}
-function seam(s,d){el(s,'path',{d,fill:'none',stroke:'#101217','stroke-opacity':.38,'stroke-width':.8})}
-function front(h={}){const s=base('front');if(h.upperChest){region(s,'path',{d:'M72 58 Q80 50 88 55 L88 69 Q78 71 68 65Z'},h.upperChest);region(s,'path',{d:'M108 58 Q100 50 92 55 L92 69 Q102 71 112 65Z'},h.upperChest)}if(h.chest){region(s,'path',{d:'M68 65 Q78 59 88 68 L88 84 Q78 89 67 79Z'},h.chest);region(s,'path',{d:'M112 65 Q102 59 92 68 L92 84 Q102 89 113 79Z'},h.chest)}if(h.frontDelts){region(s,'path',{d:'M68 59 Q60 57 54 66 Q55 75 64 80 Q70 74 70 65Z'},h.frontDelts);region(s,'path',{d:'M112 59 Q120 57 126 66 Q125 75 116 80 Q110 74 110 65Z'},h.frontDelts)}if(h.sideDelts){region(s,'path',{d:'M56 61 Q48 66 49 79 Q51 88 58 90 Q64 82 63 71 Q61 64 56 61Z'},h.sideDelts);region(s,'path',{d:'M124 61 Q132 66 131 79 Q129 88 122 90 Q116 82 117 71 Q119 64 124 61Z'},h.sideDelts)}if(h.biceps){region(s,'path',{d:'M51 84 Q59 82 62 93 L57 114 Q53 122 46 117 L47 96Z'},h.biceps);region(s,'path',{d:'M129 84 Q121 82 118 93 L123 114 Q127 122 134 117 L133 96Z'},h.biceps)}if(h.triceps){region(s,'path',{d:'M46 98 L54 101 L49 130 L40 126Z'},h.triceps);region(s,'path',{d:'M134 98 L126 101 L131 130 L140 126Z'},h.triceps)}if(h.core){region(s,'path',{d:'M79 87 Q90 82 101 87 L100 128 Q96 140 90 143 Q84 140 80 128Z'},h.core);for(let y=94;y<=122;y+=9)seam(s,`M81 ${y} Q90 ${y+3} 99 ${y}`);seam(s,'M90 88 V137')}if(h.quads){region(s,'path',{d:'M76 146 Q86 144 89 164 L84 201 Q78 212 69 202 L71 169Z'},h.quads);region(s,'path',{d:'M104 146 Q94 144 91 164 L96 201 Q102 212 111 202 L109 169Z'},h.quads);seam(s,'M80 151 Q83 174 79 199');seam(s,'M100 151 Q97 174 101 199')}if(h.calves){region(s,'path',{d:'M68 204 Q77 200 83 209 L79 232 Q74 240 67 231Z'},h.calves);region(s,'path',{d:'M112 204 Q103 200 97 209 L101 232 Q106 240 113 231Z'},h.calves)}return s}
-function back(h={}){const s=base('back');if(h.upperBack){region(s,'path',{d:'M69 55 Q90 47 111 55 L107 77 Q90 84 73 77Z'},h.upperBack);seam(s,'M90 52 V79')}if(h.rearDelts){region(s,'path',{d:'M58 59 Q49 64 50 78 Q53 88 62 90 Q68 80 66 68Z'},h.rearDelts);region(s,'path',{d:'M122 59 Q131 64 130 78 Q127 88 118 90 Q112 80 114 68Z'},h.rearDelts)}if(h.lats){region(s,'path',{d:'M71 71 Q61 79 64 109 Q68 128 81 139 L87 85Z'},h.lats);region(s,'path',{d:'M109 71 Q119 79 116 109 Q112 128 99 139 L93 85Z'},h.lats);seam(s,'M75 84 Q72 106 79 129');seam(s,'M105 84 Q108 106 101 129')}if(h.triceps){region(s,'path',{d:'M49 84 Q58 83 61 94 L54 126 Q49 133 42 126 L46 98Z'},h.triceps);region(s,'path',{d:'M131 84 Q122 83 119 94 L126 126 Q131 133 138 126 L134 98Z'},h.triceps)}if(h.lowerBack){region(s,'path',{d:'M80 105 Q90 111 100 105 L102 140 Q96 149 90 151 Q84 149 78 140Z'},h.lowerBack);seam(s,'M90 109 V147')}if(h.glutes){region(s,'path',{d:'M73 136 Q87 131 90 149 L89 172 Q81 184 70 172 L70 152Z'},h.glutes);region(s,'path',{d:'M107 136 Q93 131 90 149 L91 172 Q99 184 110 172 L110 152Z'},h.glutes);seam(s,'M90 147 V171')}if(h.hamstrings){region(s,'path',{d:'M75 170 Q86 166 89 180 L84 203 Q78 213 69 204 L70 180Z'},h.hamstrings);region(s,'path',{d:'M105 170 Q94 166 91 180 L96 203 Q102 213 111 204 L110 180Z'},h.hamstrings);seam(s,'M79 173 Q82 188 79 202');seam(s,'M101 173 Q98 188 101 202')}if(h.calves){region(s,'path',{d:'M68 204 Q77 200 83 209 L79 232 Q74 240 67 231Z'},h.calves);region(s,'path',{d:'M112 204 Q103 200 97 209 L101 232 Q106 240 113 231Z'},h.calves)}return s}
-function both(cfg){const wrap=document.createElement('div');wrap.className='anatomy-dual';const f=front(cfg.front||{}),b=back(cfg.back||{});f.querySelector('.anatomy-bg')?.remove();b.querySelector('.anatomy-bg')?.remove();f.classList.add('dual-figure');b.classList.add('dual-figure');wrap.append(f,b);return wrap}
-function render(name){const m=MAP[name];if(!m)return null;if(m[0]==='both')return both(m[1]);return (m[0]==='back'?back:front)(m[1])}
-function upgrade(){document.querySelectorAll('.exercise').forEach(ex=>{const name=(ex.dataset.exerciseName||ex.querySelector('b')?.textContent||'').trim(),thumb=ex.querySelector(':scope > .anatomy-strip .anatomy-thumb');if(!thumb||!MAP[name]||thumb.dataset.pro==='3')return;thumb.replaceChildren(render(name));thumb.dataset.pro='3'});const sheet=document.querySelector('.anatomy-sheet');if(sheet){const name=sheet.querySelector('h2')?.textContent?.trim(),hero=sheet.querySelector('.anatomy-hero-figure');if(hero&&MAP[name]&&hero.dataset.pro!=='3'){hero.replaceChildren(render(name));hero.dataset.pro='3'}}}
-new MutationObserver(upgrade).observe(document.body,{childList:true,subtree:true});addEventListener('pageshow',()=>setTimeout(upgrade,80));setInterval(upgrade,900);setTimeout(upgrade,0)})();
+function imageFor(name){
+  const src=ASSETS[name]; if(!src) return null;
+  const img=document.createElement('img');
+  img.src=src+'?v=1';
+  img.alt=`${name} muscles worked`;
+  img.loading='eager';
+  img.decoding='async';
+  img.className='real-anatomy-image';
+  return img;
+}
+function upgrade(){
+  document.querySelectorAll('.exercise').forEach(ex=>{
+    const name=(ex.dataset.exerciseName||ex.querySelector('b')?.textContent||'').trim();
+    const thumb=ex.querySelector(':scope > .anatomy-strip .anatomy-thumb');
+    const img=imageFor(name);
+    if(!thumb||!img||thumb.dataset.real==='1') return;
+    thumb.replaceChildren(img); thumb.dataset.real='1';
+  });
+  const sheet=document.querySelector('.anatomy-sheet');
+  if(sheet){
+    const name=sheet.querySelector('h2')?.textContent?.trim();
+    const hero=sheet.querySelector('.anatomy-hero-figure');
+    const img=imageFor(name);
+    if(hero&&img&&hero.dataset.real!=='1'){hero.replaceChildren(img.cloneNode(true));hero.dataset.real='1'}
+  }
+}
+new MutationObserver(upgrade).observe(document.body,{childList:true,subtree:true});
+addEventListener('pageshow',()=>setTimeout(upgrade,80));
+setInterval(upgrade,900);setTimeout(upgrade,0);
+})();
