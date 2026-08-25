@@ -1,6 +1,6 @@
 (()=>{const DEMOS={
 'Incline Dumbbell Press':'assets/demo/incline-db-press.svg',
-'Leg Press':'assets/demo/leg-press.svg',
+'Leg Press':'assets/demo/leg-press.svg?v=2',
 'Romanian Deadlift':'assets/demo/romanian-deadlift.svg',
 'Leg Extension':'assets/demo/leg-extension.svg',
 'Seated Leg Curl':'assets/demo/seated-leg-curl.svg',
