@@ -1,7 +1,7 @@
 (()=>{
 const DEMOS={
   'Incline Dumbbell Press':{src:'assets/demo/incline-db-press.svg?v=1'},
-  'Leg Press':{src:'assets/demo/leg-press.svg?v=3',benchmark:true},
+  'Leg Press':{sprite:'assets/demo/leg-press-12f.webp?v=1',frameCount:12,duration:3600},
   'Romanian Deadlift':{src:'assets/demo/romanian-deadlift.svg?v=1'},
   'Leg Extension':{src:'assets/demo/leg-extension.svg?v=1'},
   'Seated Leg Curl':{src:'assets/demo/seated-leg-curl.svg?v=1'},
@@ -49,10 +49,35 @@ function renderSequence(section,name,cfg){
   activePlayers.set(section,()=>cancelAnimationFrame(raf));
 }
 
+function renderSprite(section,name,cfg){
+  stopPlayer(section);
+  const count=cfg.frameCount||12,total=cfg.duration||3600;
+  const preload=new Image();preload.decoding='async';preload.src=cfg.sprite;
+  section.innerHTML=`${movementHeader()}<div class="movement-stage movement-sequence" role="img" aria-label="Animated ${name} demonstration"><div class="movement-sprite" style="background-image:url('${cfg.sprite}');background-size:${count*100}% 100%"></div><div class="movement-progress" aria-hidden="true">${Array.from({length:count},()=>'<i></i>').join('')}</div></div>`;
+  const sprite=section.querySelector('.movement-sprite');
+  const dots=[...section.querySelectorAll('.movement-progress i')];
+  let raf=0,start=performance.now(),paused=false,last=-1;
+  const draw=now=>{
+    if(!paused){
+      const idx=reduceMotion?0:Math.floor(((now-start)%total)/(total/count));
+      if(idx!==last){
+        sprite.style.backgroundPosition=`${count===1?0:(idx/(count-1))*100}% 0`;
+        dots.forEach((d,i)=>d.classList.toggle('active',i===idx));
+        last=idx;
+      }
+    }
+    raf=requestAnimationFrame(draw);
+  };
+  raf=requestAnimationFrame(draw);
+  const toggle=()=>{paused=!paused;section.classList.toggle('movement-paused',paused);if(!paused)start=performance.now()-(Math.max(last,0)*(total/count))};
+  section.querySelector('.movement-sequence')?.addEventListener('click',toggle);
+  activePlayers.set(section,()=>cancelAnimationFrame(raf));
+}
+
 function render(section,name,cfg){
   section.classList.add('movement-section');
-  section.dataset.movementReady=cfg.frames?.join('|')||cfg.src;
-  if(cfg.frames?.length)renderSequence(section,name,cfg);else renderStatic(section,name,cfg);
+  section.dataset.movementReady=cfg.sprite||cfg.frames?.join('|')||cfg.src;
+  if(cfg.sprite)renderSprite(section,name,cfg);else if(cfg.frames?.length)renderSequence(section,name,cfg);else renderStatic(section,name,cfg);
 }
 
 function apply(){
@@ -63,13 +88,14 @@ function apply(){
   if(!cfg)return;
   const section=[...sheet.querySelectorAll('.anatomy-section')].find(x=>x.querySelector('h3')?.textContent?.trim()==='Movement');
   if(!section)return;
-  const key=cfg.frames?.join('|')||cfg.src;
+  const key=cfg.sprite||cfg.frames?.join('|')||cfg.src;
   if(section.dataset.movementReady===key)return;
   render(section,name,cfg);
 }
 
 Object.values(DEMOS).forEach(cfg=>{
   if(cfg.src){const i=new Image();i.decoding='async';i.src=cfg.src}
+  if(cfg.sprite){const i=new Image();i.decoding='async';i.src=cfg.sprite}
   (cfg.frames||[]).forEach(src=>{const i=new Image();i.decoding='async';i.src=src});
 });
 
