@@ -25,6 +25,27 @@ const PROGRAM={
   ]
 };
 
+const SIMILAR={
+  'Incline Dumbbell Press':['Incline Machine Press','Incline Smith Press','Low-to-High Cable Press'],
+  'Flat Dumbbell Press':['Chest Press Machine','Smith Bench Press','Push-Up'],
+  'Dumbbell Lateral Raise':['Cable Lateral Raise','Lateral Raise Machine'],
+  'Rope Triceps Pushdown':['Straight-Bar Pushdown','Single-Arm Cable Pushdown','Overhead Cable Extension'],
+  'Cable Fly':['Pec Deck','Dumbbell Fly','Machine Fly'],
+  'Cable Crunch':['Machine Crunch','Weighted Crunch','Decline Crunch'],
+  'Lat Pulldown':['Neutral-Grip Pulldown','Assisted Pull-Up','Single-Arm Pulldown'],
+  'Chest-Supported Row':['Seated Cable Row','Machine Row','Chest-Supported Dumbbell Row'],
+  'Single-Arm Cable Row':['Single-Arm Dumbbell Row','Single-Arm Machine Row','Meadows Row'],
+  'Face Pull':['Reverse Pec Deck','Rear-Delt Cable Fly','Rear-Delt Machine Fly'],
+  'Dumbbell Curl':['Cable Curl','Machine Curl','EZ-Bar Curl'],
+  'Hammer Curl':['Rope Hammer Curl','Cross-Body Hammer Curl','Machine Hammer Curl'],
+  'Leg Press':['Hack Squat','Goblet Squat','Smith Squat'],
+  'Romanian Deadlift':['45° Back Extension','Dumbbell Romanian Deadlift','Good Morning'],
+  'Leg Extension':['Sissy Squat','Reverse Nordic','Single-Leg Extension'],
+  'Seated Leg Curl':['Lying Leg Curl','Standing Leg Curl','Single-Leg Curl'],
+  'Standing Calf Raise':['Seated Calf Raise','Leg Press Calf Raise','Single-Leg Calf Raise'],
+  'Hanging Knee Raise':['Captain’s Chair Raise','Reverse Crunch','Lying Leg Raise']
+};
+
 const TEMPO='3-1-1';
 const $=s=>document.querySelector(s);
 const app=$('#app');
@@ -33,8 +54,17 @@ const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 let active=load('pa_active',null);
 let history=load('pa_history',[]);
 let sessionTick=null,restTick=null,restEnd=0;
+const similarOpen=new Set();
 
 const lookupExercise=name=>Object.values(PROGRAM).flat().find(e=>e.name===name);
+
+function similarFor(name){
+  if(SIMILAR[name])return SIMILAR[name];
+  for(const [base,alts] of Object.entries(SIMILAR)){
+    if(alts.includes(name))return [base,...alts.filter(x=>x!==name)];
+  }
+  return [];
+}
 
 function normalizeActive(){
   if(!active?.exercises)return;
@@ -57,6 +87,7 @@ document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>render(b.datase
 function render(page='today'){
   clearInterval(sessionTick);
   sessionTick=null;
+  similarOpen.clear();
   if(page!=='today')stopRest();
   if(active&&page==='today')return workout();
   if(page==='history')return historyPage();
@@ -76,6 +107,7 @@ function render(page='today'){
 }
 
 function start(name){
+  similarOpen.clear();
   active={
     id:Date.now(),
     name,
@@ -114,11 +146,14 @@ function workout(){
   $('#note').oninput=e=>{active.notes=e.target.value;persist()};
   document.querySelectorAll('[data-set]').forEach(el=>el.oninput=setChange);
   document.querySelectorAll('[data-done]').forEach(b=>b.onclick=doneSet);
+  document.querySelectorAll('[data-similar]').forEach(b=>b.onclick=toggleSimilar);
+  document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=swapExercise);
   $('#finish').onclick=finish;
   $('#cancel').onclick=()=>{
     if(confirm('Cancel this workout?')){
       active=null;
       localStorage.removeItem('pa_active');
+      similarOpen.clear();
       stopRest();
       render();
     }
@@ -129,23 +164,46 @@ function workout(){
 
 function exerciseHTML(e,i){
   const last=findLast(e.name);
+  const similar=similarFor(e.name);
+  const open=similarOpen.has(i);
   return `<div class="exercise">
     <div class="exerciseHead">
       <div>
-        <b>${e.name}</b>
+        <b>${escapeHtml(e.name)}</b>
         <div class="prescription">${e.sets.length} × ${e.reps} · Tempo ${e.tempo||TEMPO} · ${e.rest}s rest</div>
         ${last?`<div class="previous">Previous · ${last}</div>`:''}
       </div>
+      ${similar.length?`<button class="similarToggle" data-similar="${i}">${open?'Close':'Similar'}</button>`:''}
     </div>
+    ${open?`<div class="similarPanel"><span class="tiny">SIMILAR EXERCISES</span>${similar.map(x=>`<button class="similarChoice" data-swap="${i}" data-name="${escapeAttr(x)}">${escapeHtml(x)}</button>`).join('')}</div>`:''}
     <div class="sets">
       <span class="head">SET</span><span class="head">KG</span><span class="head">REPS</span><span class="head">DONE</span>
       ${e.sets.map((s,j)=>`
         <span>${j+1}</span>
-        <input aria-label="${e.name} set ${j+1} weight" inputmode="decimal" data-set="${i},${j},w" value="${escapeAttr(s.w??'')}">
-        <input aria-label="${e.name} set ${j+1} reps" inputmode="numeric" data-set="${i},${j},r" value="${escapeAttr(s.r??'')}">
+        <input aria-label="${escapeAttr(e.name)} set ${j+1} weight" inputmode="decimal" data-set="${i},${j},w" value="${escapeAttr(s.w??'')}">
+        <input aria-label="${escapeAttr(e.name)} set ${j+1} reps" inputmode="numeric" data-set="${i},${j},r" value="${escapeAttr(s.r??'')}">
         <button class="done ${s.done?'on':''}" data-done="${i},${j}" aria-label="Mark set ${j+1} ${s.done?'not done':'done'}">${s.done?'✓':'○'}</button>`).join('')}
     </div>
   </div>`;
+}
+
+function toggleSimilar(ev){
+  const i=+ev.currentTarget.dataset.similar;
+  if(similarOpen.has(i))similarOpen.delete(i);else similarOpen.add(i);
+  workout();
+}
+
+function swapExercise(ev){
+  const i=+ev.currentTarget.dataset.swap;
+  const name=ev.currentTarget.dataset.name;
+  const e=active.exercises[i];
+  const hasData=e.sets.some(s=>s.w!==''||s.r!==''||s.done);
+  if(hasData&&!confirm(`Switch ${e.name} to ${name}? Current sets for this exercise will be cleared.`))return;
+  e.name=name;
+  if(hasData)e.sets=e.sets.map(()=>({w:'',r:'',done:false}));
+  similarOpen.delete(i);
+  persist();
+  workout();
 }
 
 function setChange(ev){
@@ -212,6 +270,7 @@ function finish(){
   save('pa_history',history);
   localStorage.removeItem('pa_active');
   active=null;
+  similarOpen.clear();
   stopRest();
   historyPage();
 }
@@ -242,7 +301,7 @@ function detail(i){
   app.innerHTML=`<div class="card">
     <h2>${h.name}</h2>
     <p class="muted">${new Date(h.started).toLocaleString()}${mins?' · '+mins+' min':''}</p>
-    ${h.exercises.map(e=>`<div class="exercise"><b>${e.name}</b><div class="prescription">${e.reps?`${e.sets.length} × ${e.reps} · `:''}Tempo ${e.tempo||TEMPO}</div><div>${(e.sets||[]).filter(s=>s.w!==''&&s.r!=='').map(s=>`${s.w} kg × ${s.r}`).join('<br>')||'<span class="muted">No logged sets</span>'}</div></div>`).join('')}
+    ${h.exercises.map(e=>`<div class="exercise"><b>${escapeHtml(e.name)}</b><div class="prescription">${e.reps?`${e.sets.length} × ${e.reps} · `:''}Tempo ${e.tempo||TEMPO}</div><div>${(e.sets||[]).filter(s=>s.w!==''&&s.r!=='').map(s=>`${s.w} kg × ${s.r}`).join('<br>')||'<span class="muted">No logged sets</span>'}</div></div>`).join('')}
     ${h.notes?`<p>${escapeHtml(h.notes)}</p>`:''}
   </div>
   <div class="actions"><button id="back">Back</button><button id="delete" class="danger">Delete</button></div>`;
