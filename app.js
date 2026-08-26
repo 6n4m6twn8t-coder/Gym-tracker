@@ -53,8 +53,10 @@ const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{retur
 const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
 let active=load('pa_active',null);
 let history=load('pa_history',[]);
+let exerciseNotes=load('pa_exercise_notes',{});
 let sessionTick=null,restTick=null,restEnd=0;
 const similarOpen=new Set();
+const noteOpen=new Set();
 
 const lookupExercise=name=>Object.values(PROGRAM).flat().find(e=>e.name===name);
 
@@ -64,6 +66,23 @@ function similarFor(name){
     if(alts.includes(name))return [base,...alts.filter(x=>x!==name)];
   }
   return [];
+}
+
+function previousExercise(name){
+  for(const h of history){
+    const e=h.exercises?.find(x=>x.name===name);
+    if(e)return e;
+  }
+  return null;
+}
+
+function makeSets(name,count){
+  const previous=previousExercise(name);
+  return Array.from({length:count},(_,i)=>({
+    w:previous?.sets?.[i]?.w??'',
+    r:'',
+    done:false
+  }));
 }
 
 function normalizeActive(){
@@ -88,6 +107,7 @@ function render(page='today'){
   clearInterval(sessionTick);
   sessionTick=null;
   similarOpen.clear();
+  noteOpen.clear();
   if(page!=='today')stopRest();
   if(active&&page==='today')return workout();
   if(page==='history')return historyPage();
@@ -108,6 +128,7 @@ function render(page='today'){
 
 function start(name){
   similarOpen.clear();
+  noteOpen.clear();
   active={
     id:Date.now(),
     name,
@@ -118,7 +139,7 @@ function start(name){
       reps:e.reps,
       rest:e.rest,
       tempo:TEMPO,
-      sets:Array.from({length:e.sets},()=>({w:'',r:'',done:false}))
+      sets:makeSets(e.name,e.sets)
     }))
   };
   save('pa_active',active);
@@ -148,12 +169,15 @@ function workout(){
   document.querySelectorAll('[data-done]').forEach(b=>b.onclick=doneSet);
   document.querySelectorAll('[data-similar]').forEach(b=>b.onclick=toggleSimilar);
   document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=swapExercise);
+  document.querySelectorAll('[data-note-toggle]').forEach(b=>b.onclick=toggleExerciseNote);
+  document.querySelectorAll('[data-exercise-note]').forEach(el=>el.oninput=exerciseNoteChange);
   $('#finish').onclick=finish;
   $('#cancel').onclick=()=>{
     if(confirm('Cancel this workout?')){
       active=null;
       localStorage.removeItem('pa_active');
       similarOpen.clear();
+      noteOpen.clear();
       stopRest();
       render();
     }
@@ -165,17 +189,26 @@ function workout(){
 function exerciseHTML(e,i){
   const last=findLast(e.name);
   const similar=similarFor(e.name);
-  const open=similarOpen.has(i);
+  const similarIsOpen=similarOpen.has(i);
+  const noteIsOpen=noteOpen.has(i);
+  const note=exerciseNotes[e.name]||'';
+  const cue=progressionCue(e);
+  const loaded=e.sets.some(s=>s.w!=='')&&!e.sets.some(s=>s.r!==''||s.done);
   return `<div class="exercise">
     <div class="exerciseHead">
       <div>
         <b>${escapeHtml(e.name)}</b>
         <div class="prescription">${e.sets.length} × ${e.reps} · Tempo ${e.tempo||TEMPO} · ${e.rest}s rest</div>
         ${last?`<div class="previous">Previous · ${last}</div>`:''}
+        ${loaded?`<div class="autofill">Last weights loaded</div>`:''}
       </div>
-      ${similar.length?`<button class="similarToggle" data-similar="${i}">${open?'Close':'Similar'}</button>`:''}
+      <div class="exerciseTools">
+        <button class="toolButton" data-note-toggle="${i}">${noteIsOpen?'Close':note?'Note ✓':'Note'}</button>
+        ${similar.length?`<button class="toolButton" data-similar="${i}">${similarIsOpen?'Close':'Similar'}</button>`:''}
+      </div>
     </div>
-    ${open?`<div class="similarPanel"><span class="tiny">SIMILAR EXERCISES</span>${similar.map(x=>`<button class="similarChoice" data-swap="${i}" data-name="${escapeAttr(x)}">${escapeHtml(x)}</button>`).join('')}</div>`:''}
+    ${noteIsOpen?`<div class="exerciseNotePanel"><span class="tiny">EXERCISE NOTE</span><textarea data-exercise-note="${i}" placeholder="Seat, setup, grip, machine setting…">${escapeHtml(note)}</textarea></div>`:''}
+    ${similarIsOpen?`<div class="similarPanel"><span class="tiny">SIMILAR EXERCISES</span>${similar.map(x=>`<button class="similarChoice" data-swap="${i}" data-name="${escapeAttr(x)}">${escapeHtml(x)}</button>`).join('')}</div>`:''}
     <div class="sets">
       <span class="head">SET</span><span class="head">KG</span><span class="head">REPS</span><span class="head">DONE</span>
       ${e.sets.map((s,j)=>`
@@ -184,6 +217,7 @@ function exerciseHTML(e,i){
         <input aria-label="${escapeAttr(e.name)} set ${j+1} reps" inputmode="numeric" data-set="${i},${j},r" value="${escapeAttr(s.r??'')}">
         <button class="done ${s.done?'on':''}" data-done="${i},${j}" aria-label="Mark set ${j+1} ${s.done?'not done':'done'}">${s.done?'✓':'○'}</button>`).join('')}
     </div>
+    ${cue?`<div class="progressionCue">✓ ${cue}</div>`:''}
   </div>`;
 }
 
@@ -193,17 +227,38 @@ function toggleSimilar(ev){
   workout();
 }
 
+function toggleExerciseNote(ev){
+  const i=+ev.currentTarget.dataset.noteToggle;
+  if(noteOpen.has(i))noteOpen.delete(i);else noteOpen.add(i);
+  workout();
+}
+
+function exerciseNoteChange(ev){
+  const i=+ev.target.dataset.exerciseNote;
+  const name=active.exercises[i].name;
+  const value=ev.target.value;
+  if(value.trim())exerciseNotes[name]=value;else delete exerciseNotes[name];
+  save('pa_exercise_notes',exerciseNotes);
+}
+
 function swapExercise(ev){
   const i=+ev.currentTarget.dataset.swap;
   const name=ev.currentTarget.dataset.name;
   const e=active.exercises[i];
-  const hasData=e.sets.some(s=>s.w!==''||s.r!==''||s.done);
+  const hasData=e.sets.some(s=>s.r!==''||s.done||s.w!==''&&!previousWeightMatches(e,s));
   if(hasData&&!confirm(`Switch ${e.name} to ${name}? Current sets for this exercise will be cleared.`))return;
   e.name=name;
-  if(hasData)e.sets=e.sets.map(()=>({w:'',r:'',done:false}));
+  e.sets=makeSets(name,e.sets.length);
   similarOpen.delete(i);
+  noteOpen.delete(i);
   persist();
   workout();
+}
+
+function previousWeightMatches(e,set){
+  const previous=previousExercise(e.name);
+  if(!previous)return false;
+  return previous.sets?.some(s=>String(s.w??'')===String(set.w??''));
 }
 
 function setChange(ev){
@@ -220,6 +275,15 @@ function doneSet(ev){
   const rest=active.exercises[i].rest||90;
   workout();
   if(set.done)startRest(rest);
+}
+
+function progressionCue(e){
+  const match=String(e.reps||'').match(/(\d+)\D+(\d+)/);
+  const top=match?Number(match[2]):null;
+  if(!top||!e.sets.length)return '';
+  const allHitTop=e.sets.every(s=>s.done&&Number(s.r)>=top&&s.w!=='');
+  if(!allHitTop)return '';
+  return 'Progression earned · try +2.5 kg next time';
 }
 
 function persist(){save('pa_active',active)}
@@ -271,18 +335,16 @@ function finish(){
   localStorage.removeItem('pa_active');
   active=null;
   similarOpen.clear();
+  noteOpen.clear();
   stopRest();
   historyPage();
 }
 
 function findLast(name){
-  for(const h of history){
-    const e=h.exercises?.find(x=>x.name===name);
-    if(!e)continue;
-    const sets=e.sets?.filter(s=>s.w!==''&&s.r!=='').map(s=>`${s.w}×${s.r}`)||[];
-    if(sets.length)return sets.join(' · ');
-  }
-  return '';
+  const e=previousExercise(name);
+  if(!e)return '';
+  const sets=e.sets?.filter(s=>s.w!==''&&s.r!=='').map(s=>`${s.w}×${s.r}`)||[];
+  return sets.join(' · ');
 }
 
 function historyPage(){
@@ -301,7 +363,7 @@ function detail(i){
   app.innerHTML=`<div class="card">
     <h2>${h.name}</h2>
     <p class="muted">${new Date(h.started).toLocaleString()}${mins?' · '+mins+' min':''}</p>
-    ${h.exercises.map(e=>`<div class="exercise"><b>${escapeHtml(e.name)}</b><div class="prescription">${e.reps?`${e.sets.length} × ${e.reps} · `:''}Tempo ${e.tempo||TEMPO}</div><div>${(e.sets||[]).filter(s=>s.w!==''&&s.r!=='').map(s=>`${s.w} kg × ${s.r}`).join('<br>')||'<span class="muted">No logged sets</span>'}</div></div>`).join('')}
+    ${h.exercises.map(e=>`<div class="exercise"><b>${escapeHtml(e.name)}</b><div class="prescription">${e.reps?`${e.sets.length} × ${e.reps} · `:''}Tempo ${e.tempo||TEMPO}</div><div>${(e.sets||[]).filter(s=>s.w!==''&&s.r!=='').map(s=>`${s.w} kg × ${s.r}`).join('<br>')||'<span class="muted">No logged sets</span>'}</div>${progressionCue(e)?`<div class="progressionCue">✓ ${progressionCue(e)}</div>`:''}</div>`).join('')}
     ${h.notes?`<p>${escapeHtml(h.notes)}</p>`:''}
   </div>
   <div class="actions"><button id="back">Back</button><button id="delete" class="danger">Delete</button></div>`;
