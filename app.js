@@ -70,10 +70,24 @@ function similarFor(name){
 
 function previousExercise(name){
   for(const h of history){
-    const e=h.exercises?.find(x=>x.name===name);
+    const e=h.exercises?.find(x=>x.name===name&&!x.skipped);
     if(e)return e;
   }
   return null;
+}
+
+function historicalSets(name){
+  const out=[];
+  for(const h of history){
+    for(const e of h.exercises||[]){
+      if(e.name!==name||e.skipped)continue;
+      for(const s of e.sets||[]){
+        const w=Number(s.w),r=Number(s.r);
+        if(s.w!==''&&s.r!==''&&Number.isFinite(w)&&Number.isFinite(r))out.push({w,r});
+      }
+    }
+  }
+  return out;
 }
 
 function makeSets(name,count){
@@ -94,6 +108,7 @@ function normalizeActive(){
       reps:e.reps||preset.reps||'8–12',
       rest:e.rest||preset.rest||90,
       tempo:e.tempo||TEMPO,
+      skipped:!!e.skipped,
       sets:Array.isArray(e.sets)&&e.sets.length?e.sets:Array.from({length:preset.sets||3},()=>({w:'',r:'',done:false}))
     };
   });
@@ -139,6 +154,7 @@ function start(name){
       reps:e.reps,
       rest:e.rest,
       tempo:TEMPO,
+      skipped:false,
       sets:makeSets(e.name,e.sets)
     }))
   };
@@ -146,10 +162,23 @@ function start(name){
   workout();
 }
 
+function workoutProgress(){
+  const available=active.exercises.filter(e=>!e.skipped);
+  const done=available.reduce((n,e)=>n+e.sets.filter(s=>s.done).length,0);
+  const total=available.reduce((n,e)=>n+e.sets.length,0);
+  const skipped=active.exercises.filter(e=>e.skipped).length;
+  return {done,total,skipped,pct:total?Math.round(done/total*100):100};
+}
+
 function workout(){
   clearInterval(sessionTick);
+  const progress=workoutProgress();
   app.innerHTML=`
-    <div class="sessionBar"><b>${active.name}</b><span id="clock">00:00</span></div>
+    <div class="sessionBar">
+      <div class="sessionMeta"><b>${active.name}</b><small>${progress.done} / ${progress.total} sets${progress.skipped?` · ${progress.skipped} skipped`:''}</small></div>
+      <span id="clock">00:00</span>
+      <div class="progressTrack"><div class="progressFill" style="width:${progress.pct}%"></div></div>
+    </div>
     <div class="card">
       <span class="tiny">ACTIVE SESSION</span>
       <h2>${active.name}</h2>
@@ -171,6 +200,7 @@ function workout(){
   document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=swapExercise);
   document.querySelectorAll('[data-note-toggle]').forEach(b=>b.onclick=toggleExerciseNote);
   document.querySelectorAll('[data-exercise-note]').forEach(el=>el.oninput=exerciseNoteChange);
+  document.querySelectorAll('[data-skip]').forEach(b=>b.onclick=toggleSkipExercise);
   $('#finish').onclick=finish;
   $('#cancel').onclick=()=>{
     if(confirm('Cancel this workout?')){
@@ -192,12 +222,13 @@ function exerciseHTML(e,i){
   const similarIsOpen=similarOpen.has(i);
   const noteIsOpen=noteOpen.has(i);
   const note=exerciseNotes[e.name]||'';
-  const cue=progressionCue(e);
-  const loaded=e.sets.some(s=>s.w!=='')&&!e.sets.some(s=>s.r!==''||s.done);
-  return `<div class="exercise">
+  const cue=e.skipped?'':progressionCue(e);
+  const pr=e.skipped?'':prStatus(e);
+  const loaded=!e.skipped&&e.sets.some(s=>s.w!=='')&&!e.sets.some(s=>s.r!==''||s.done);
+  return `<div class="exercise ${e.skipped?'skipped':''}">
     <div class="exerciseHead">
       <div>
-        <b>${escapeHtml(e.name)}</b>
+        <div class="titleLine"><b>${escapeHtml(e.name)}</b>${pr?`<span class="prBadge">${pr}</span>`:''}</div>
         <div class="prescription">${e.sets.length} × ${e.reps} · Tempo ${e.tempo||TEMPO} · ${e.rest}s rest</div>
         ${last?`<div class="previous">Previous · ${last}</div>`:''}
         ${loaded?`<div class="autofill">Last weights loaded</div>`:''}
@@ -205,10 +236,12 @@ function exerciseHTML(e,i){
       <div class="exerciseTools">
         <button class="toolButton" data-note-toggle="${i}">${noteIsOpen?'Close':note?'Note ✓':'Note'}</button>
         ${similar.length?`<button class="toolButton" data-similar="${i}">${similarIsOpen?'Close':'Similar'}</button>`:''}
+        <button class="toolButton skipTool" data-skip="${i}">${e.skipped?'Undo':'Skip'}</button>
       </div>
     </div>
     ${noteIsOpen?`<div class="exerciseNotePanel"><span class="tiny">EXERCISE NOTE</span><textarea data-exercise-note="${i}" placeholder="Seat, setup, grip, machine setting…">${escapeHtml(note)}</textarea></div>`:''}
     ${similarIsOpen?`<div class="similarPanel"><span class="tiny">SIMILAR EXERCISES</span>${similar.map(x=>`<button class="similarChoice" data-swap="${i}" data-name="${escapeAttr(x)}">${escapeHtml(x)}</button>`).join('')}</div>`:''}
+    ${e.skipped?`<div class="skippedState">Skipped for this workout</div>`:`
     <div class="sets">
       <span class="head">SET</span><span class="head">KG</span><span class="head">REPS</span><span class="head">DONE</span>
       ${e.sets.map((s,j)=>`
@@ -217,7 +250,7 @@ function exerciseHTML(e,i){
         <input aria-label="${escapeAttr(e.name)} set ${j+1} reps" inputmode="numeric" data-set="${i},${j},r" value="${escapeAttr(s.r??'')}">
         <button class="done ${s.done?'on':''}" data-done="${i},${j}" aria-label="Mark set ${j+1} ${s.done?'not done':'done'}">${s.done?'✓':'○'}</button>`).join('')}
     </div>
-    ${cue?`<div class="progressionCue">✓ ${cue}</div>`:''}
+    ${cue?`<div class="progressionCue">✓ ${cue}</div>`:''}`}
   </div>`;
 }
 
@@ -241,6 +274,18 @@ function exerciseNoteChange(ev){
   save('pa_exercise_notes',exerciseNotes);
 }
 
+function toggleSkipExercise(ev){
+  const i=+ev.currentTarget.dataset.skip;
+  const e=active.exercises[i];
+  if(!e.skipped&&e.sets.some(s=>s.done||s.r!=='')){
+    if(!confirm(`Skip ${e.name}? Logged sets will stay saved, but this exercise won't count toward workout progress.`))return;
+  }
+  e.skipped=!e.skipped;
+  if(e.skipped){similarOpen.delete(i);noteOpen.delete(i)}
+  persist();
+  workout();
+}
+
 function swapExercise(ev){
   const i=+ev.currentTarget.dataset.swap;
   const name=ev.currentTarget.dataset.name;
@@ -248,6 +293,7 @@ function swapExercise(ev){
   const hasData=e.sets.some(s=>s.r!==''||s.done||s.w!==''&&!previousWeightMatches(e,s));
   if(hasData&&!confirm(`Switch ${e.name} to ${name}? Current sets for this exercise will be cleared.`))return;
   e.name=name;
+  e.skipped=false;
   e.sets=makeSets(name,e.sets.length);
   similarOpen.delete(i);
   noteOpen.delete(i);
@@ -275,6 +321,20 @@ function doneSet(ev){
   const rest=active.exercises[i].rest||90;
   workout();
   if(set.done)startRest(rest);
+}
+
+function prStatus(e){
+  const past=historicalSets(e.name);
+  if(!past.length)return '';
+  const current=e.sets.filter(s=>s.done&&s.w!==''&&s.r!=='').map(s=>({w:Number(s.w),r:Number(s.r)})).filter(s=>Number.isFinite(s.w)&&Number.isFinite(s.r));
+  if(!current.length)return '';
+  const bestWeight=Math.max(...past.map(s=>s.w));
+  if(current.some(s=>s.w>bestWeight))return 'WEIGHT PR';
+  for(const s of current){
+    const same=past.filter(p=>p.w===s.w);
+    if(same.length&&s.r>Math.max(...same.map(p=>p.r)))return 'REP PR';
+  }
+  return '';
 }
 
 function progressionCue(e){
@@ -330,6 +390,7 @@ function clock(){
 
 function finish(){
   active.finished=Date.now();
+  active.exercises.forEach(e=>{e.pr=e.skipped?'':prStatus(e)});
   history.unshift(active);
   save('pa_history',history);
   localStorage.removeItem('pa_active');
@@ -363,7 +424,7 @@ function detail(i){
   app.innerHTML=`<div class="card">
     <h2>${h.name}</h2>
     <p class="muted">${new Date(h.started).toLocaleString()}${mins?' · '+mins+' min':''}</p>
-    ${h.exercises.map(e=>`<div class="exercise"><b>${escapeHtml(e.name)}</b><div class="prescription">${e.reps?`${e.sets.length} × ${e.reps} · `:''}Tempo ${e.tempo||TEMPO}</div><div>${(e.sets||[]).filter(s=>s.w!==''&&s.r!=='').map(s=>`${s.w} kg × ${s.r}`).join('<br>')||'<span class="muted">No logged sets</span>'}</div>${progressionCue(e)?`<div class="progressionCue">✓ ${progressionCue(e)}</div>`:''}</div>`).join('')}
+    ${h.exercises.map(e=>`<div class="exercise ${e.skipped?'skipped':''}"><div class="titleLine"><b>${escapeHtml(e.name)}</b>${e.pr?`<span class="prBadge">${e.pr}</span>`:''}</div><div class="prescription">${e.reps?`${e.sets.length} × ${e.reps} · `:''}Tempo ${e.tempo||TEMPO}</div>${e.skipped?'<div class="skippedState">Skipped</div>':`<div>${(e.sets||[]).filter(s=>s.w!==''&&s.r!=='').map(s=>`${s.w} kg × ${s.r}`).join('<br>')||'<span class="muted">No logged sets</span>'}</div>${progressionCue(e)?`<div class="progressionCue">✓ ${progressionCue(e)}</div>`:''}`}</div>`).join('')}
     ${h.notes?`<p>${escapeHtml(h.notes)}</p>`:''}
   </div>
   <div class="actions"><button id="back">Back</button><button id="delete" class="danger">Delete</button></div>`;
