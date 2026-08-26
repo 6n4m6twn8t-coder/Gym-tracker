@@ -1,27 +1,263 @@
-const PROGRAM={Push:[['Incline Dumbbell Press','Upper chest','Incline Machine Press|Incline Smith Press|Low-to-High Cable Press'],['Flat Dumbbell Press','Chest','Chest Press Machine|Smith Bench Press|Push-Up'],['Dumbbell Lateral Raise','Side delts','Cable Lateral Raise|Lateral Raise Machine'],['Rope Triceps Pushdown','Triceps','Straight-Bar Pushdown|Single-Arm Cable Extension'],['Cable Fly','Chest','Pec Deck|Dumbbell Fly'],['Cable Crunch','Abs','Machine Crunch|Weighted Crunch']],Pull:[['Lat Pulldown','Lats','Assisted Pull-Up|Neutral-Grip Pulldown'],['Chest-Supported Row','Mid back','Seated Cable Row|Machine Row'],['Single-Arm Cable Row','Lats','Dumbbell Row|Machine Row'],['Face Pull','Rear delts','Reverse Pec Deck|Rear-Delt Cable Fly'],['Dumbbell Curl','Biceps','Cable Curl|Machine Curl'],['Hammer Curl','Biceps / brachialis','Rope Hammer Curl|Cross-Body Curl']],Legs:[['Leg Press','Quads / glutes','Hack Squat|Goblet Squat'],['Romanian Deadlift','Hamstrings / glutes','Seated Leg Curl|45° Back Extension'],['Leg Extension','Quads','Sissy Squat|Split Squat'],['Seated Leg Curl','Hamstrings','Lying Leg Curl|Romanian Deadlift'],['Standing Calf Raise','Calves','Seated Calf Raise|Leg Press Calf Raise'],['Hanging Knee Raise','Abs','Captain’s Chair Raise|Reverse Crunch']]};
-const THEMES={athlete:{name:'Athlete Dark',vars:{bg:'#0b0c0f',surface:'#15171c',surface2:'#101217',border:'#292d35',text:'#f5f5f5',muted:'#9da3ae',accent:'#f2d06b',accentText:'#17140a',nav:'rgba(11,12,15,.96)'}},black:{name:'Minimal Black',vars:{bg:'#000000',surface:'#0d0d0f',surface2:'#070708',border:'#242426',text:'#f7f7f7',muted:'#99999f',accent:'#ffffff',accentText:'#050505',nav:'rgba(0,0,0,.96)'}},stone:{name:'Stone',vars:{bg:'#171714',surface:'#22211d',surface2:'#1b1a17',border:'#39372f',text:'#f5f0e6',muted:'#aba69b',accent:'#d9c7a1',accentText:'#201c14',nav:'rgba(23,23,20,.96)'}}};
-const $=s=>document.querySelector(s),app=$('#app');const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}},save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
-let active=load('pa_active',null),history=load('pa_history',[]),settings=load('pa_settings',{theme:'athlete',compact:false,showRir:true,fontScale:1}),tick,restTick,restEnd=0;
-function applySettings(){const t=THEMES[settings.theme]||THEMES.athlete;Object.entries(t.vars).forEach(([k,v])=>document.documentElement.style.setProperty('--'+k,v));document.documentElement.style.setProperty('--fontScale',settings.fontScale||1);document.body.classList.toggle('compact',!!settings.compact);document.querySelector('meta[name="theme-color"]')?.setAttribute('content',t.vars.bg)}applySettings();
+const PROGRAM={
+  Push:[
+    {name:'Incline Dumbbell Press',sets:3,reps:'8–12',rest:90},
+    {name:'Flat Dumbbell Press',sets:3,reps:'8–12',rest:90},
+    {name:'Dumbbell Lateral Raise',sets:3,reps:'12–15',rest:60},
+    {name:'Rope Triceps Pushdown',sets:3,reps:'10–15',rest:60},
+    {name:'Cable Fly',sets:3,reps:'10–15',rest:60},
+    {name:'Cable Crunch',sets:3,reps:'10–15',rest:45}
+  ],
+  Pull:[
+    {name:'Lat Pulldown',sets:3,reps:'8–12',rest:90},
+    {name:'Chest-Supported Row',sets:3,reps:'8–12',rest:90},
+    {name:'Single-Arm Cable Row',sets:3,reps:'10–12',rest:75},
+    {name:'Face Pull',sets:3,reps:'12–15',rest:60},
+    {name:'Dumbbell Curl',sets:3,reps:'8–12',rest:60},
+    {name:'Hammer Curl',sets:3,reps:'10–12',rest:60}
+  ],
+  Legs:[
+    {name:'Leg Press',sets:3,reps:'8–12',rest:90},
+    {name:'Romanian Deadlift',sets:3,reps:'8–12',rest:90},
+    {name:'Leg Extension',sets:3,reps:'10–15',rest:60},
+    {name:'Seated Leg Curl',sets:3,reps:'10–15',rest:60},
+    {name:'Standing Calf Raise',sets:3,reps:'10–15',rest:60},
+    {name:'Hanging Knee Raise',sets:3,reps:'10–15',rest:45}
+  ]
+};
+
+const TEMPO='3-1-1';
+const $=s=>document.querySelector(s);
+const app=$('#app');
+const load=(k,d)=>{try{return JSON.parse(localStorage.getItem(k))??d}catch{return d}};
+const save=(k,v)=>localStorage.setItem(k,JSON.stringify(v));
+let active=load('pa_active',null);
+let history=load('pa_history',[]);
+let sessionTick=null,restTick=null,restEnd=0;
+
+const lookupExercise=name=>Object.values(PROGRAM).flat().find(e=>e.name===name);
+
+function normalizeActive(){
+  if(!active?.exercises)return;
+  active.exercises=active.exercises.map(e=>{
+    const preset=lookupExercise(e.name)||{};
+    return {
+      ...e,
+      reps:e.reps||preset.reps||'8–12',
+      rest:e.rest||preset.rest||90,
+      tempo:e.tempo||TEMPO,
+      sets:Array.isArray(e.sets)&&e.sets.length?e.sets:Array.from({length:preset.sets||3},()=>({w:'',r:'',done:false}))
+    };
+  });
+  save('pa_active',active);
+}
+normalizeActive();
+
 document.querySelectorAll('[data-nav]').forEach(b=>b.onclick=()=>render(b.dataset.nav));
-function render(page='today'){clearInterval(tick);stopRest();if(active&&page==='today')return workout();if(page==='history')return historyPage();if(page==='library')return library();if(page==='settings')return settingsPage();app.innerHTML=`<div class="card"><h2>Today</h2><p class="muted">Choose your session. Your workout stays saved if the app closes.</p></div>${Object.keys(PROGRAM).map(n=>`<button class="card workout" data-start="${n}"><h2>${n}</h2><span class="muted">${PROGRAM[n].length} exercises · ~45 min</span></button>`).join('')}`;document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>start(b.dataset.start))}
-function start(name){active={id:Date.now(),name,started:Date.now(),notes:'',exercises:PROGRAM[name].map(([name,target,alts])=>({name,target,alts:alts.split('|'),sets:[{w:'',r:'',rir:'',done:false},{w:'',r:'',rir:'',done:false},{w:'',r:'',rir:'',done:false}]}))};save('pa_active',active);workout()}
-function workout(){app.innerHTML=`<div class="timer"><b>${active.name}</b><span id="clock">00:00</span></div><div class="card"><span class="tiny">ACTIVE SESSION</span><h2>${active.name}</h2><p class="muted">Tap ✓ when a set is complete. The programmed rest timer starts automatically.</p>${active.exercises.map((e,i)=>exerciseHTML(e,i)).join('')}</div><div class="card"><h3>Session note</h3><textarea id="note" placeholder="Bench busy, shoulder felt tight, low energy…">${active.notes||''}</textarea></div><div class="actions"><button class="primary" id="finish">Finish & save</button><button id="cancel" class="danger">Cancel</button></div>`;$('#note').oninput=e=>{active.notes=e.target.value;persist()};document.querySelectorAll('[data-set]').forEach(el=>el.onchange=setChange);document.querySelectorAll('[data-done]').forEach(b=>b.onclick=doneSet);document.querySelectorAll('[data-swap]').forEach(b=>b.onclick=()=>swap(+b.dataset.swap));$('#finish').onclick=finish;$('#cancel').onclick=()=>{if(confirm('Cancel this workout?')){active=null;localStorage.removeItem('pa_active');render()}};clock();tick=setInterval(clock,1000)}
-function exerciseHTML(e,i){let last=findLast(e.name),rirHead=settings.showRir?'<span class="tiny">RIR</span>':'<span></span>';return `<div class="exercise"><div class="row"><div class="grow"><b>${e.name}</b><div class="tiny">Target · ${e.target} · ${restFor(e.name)}s rest</div>${last?`<div class="tiny">Last · ${last}</div>`:''}</div><button class="swap" data-swap="${i}">Swap</button></div><div class="sets"><span class="tiny">SET</span><span class="tiny">KG</span><span class="tiny">REPS</span>${rirHead}<span class="tiny">DONE</span>${e.sets.map((s,j)=>`<span>${j+1}</span><input inputmode="decimal" data-set="${i},${j},w" value="${s.w}"><input inputmode="numeric" data-set="${i},${j},r" value="${s.r}">${settings.showRir?`<input inputmode="numeric" data-set="${i},${j},rir" value="${s.rir}" placeholder="–">`:'<span></span>'}<button class="done ${s.done?'on':''}" data-done="${i},${j}">${s.done?'✓':'○'}</button>`).join('')}</div></div>`}
-function setChange(ev){let [i,j,k]=ev.target.dataset.set.split(',');active.exercises[i].sets[j][k]=ev.target.value;persist()}
-function doneSet(ev){let [i,j]=ev.currentTarget.dataset.done.split(',').map(Number),s=active.exercises[i].sets[j];s.done=!s.done;persist();if(s.done)startRest(restFor(active.exercises[i].name));workout()}
+
+function render(page='today'){
+  clearInterval(sessionTick);
+  sessionTick=null;
+  if(page!=='today')stopRest();
+  if(active&&page==='today')return workout();
+  if(page==='history')return historyPage();
+
+  app.innerHTML=`
+    <div class="card">
+      <h2>Today</h2>
+      <p class="muted">Choose a session and train. Nothing else.</p>
+    </div>
+    ${Object.entries(PROGRAM).map(([name,exercises])=>`
+      <button class="card workout" data-start="${name}">
+        <h2>${name}</h2>
+        <span class="muted">${exercises.length} exercises · 3-1-1 tempo</span>
+      </button>`).join('')}`;
+
+  document.querySelectorAll('[data-start]').forEach(b=>b.onclick=()=>start(b.dataset.start));
+}
+
+function start(name){
+  active={
+    id:Date.now(),
+    name,
+    started:Date.now(),
+    notes:'',
+    exercises:PROGRAM[name].map(e=>({
+      name:e.name,
+      reps:e.reps,
+      rest:e.rest,
+      tempo:TEMPO,
+      sets:Array.from({length:e.sets},()=>({w:'',r:'',done:false}))
+    }))
+  };
+  save('pa_active',active);
+  workout();
+}
+
+function workout(){
+  clearInterval(sessionTick);
+  app.innerHTML=`
+    <div class="sessionBar"><b>${active.name}</b><span id="clock">00:00</span></div>
+    <div class="card">
+      <span class="tiny">ACTIVE SESSION</span>
+      <h2>${active.name}</h2>
+      ${active.exercises.map((e,i)=>exerciseHTML(e,i)).join('')}
+    </div>
+    <div class="card">
+      <h3>Notes</h3>
+      <textarea id="note" placeholder="Anything worth remembering…">${escapeHtml(active.notes||'')}</textarea>
+    </div>
+    <div class="actions">
+      <button class="primary" id="finish">Finish & save</button>
+      <button class="danger" id="cancel">Cancel</button>
+    </div>`;
+
+  $('#note').oninput=e=>{active.notes=e.target.value;persist()};
+  document.querySelectorAll('[data-set]').forEach(el=>el.oninput=setChange);
+  document.querySelectorAll('[data-done]').forEach(b=>b.onclick=doneSet);
+  $('#finish').onclick=finish;
+  $('#cancel').onclick=()=>{
+    if(confirm('Cancel this workout?')){
+      active=null;
+      localStorage.removeItem('pa_active');
+      stopRest();
+      render();
+    }
+  };
+  clock();
+  sessionTick=setInterval(clock,1000);
+}
+
+function exerciseHTML(e,i){
+  const last=findLast(e.name);
+  return `<div class="exercise">
+    <div class="exerciseHead">
+      <div>
+        <b>${e.name}</b>
+        <div class="prescription">${e.sets.length} × ${e.reps} · Tempo ${e.tempo||TEMPO} · ${e.rest}s rest</div>
+        ${last?`<div class="previous">Previous · ${last}</div>`:''}
+      </div>
+    </div>
+    <div class="sets">
+      <span class="head">SET</span><span class="head">KG</span><span class="head">REPS</span><span class="head">DONE</span>
+      ${e.sets.map((s,j)=>`
+        <span>${j+1}</span>
+        <input aria-label="${e.name} set ${j+1} weight" inputmode="decimal" data-set="${i},${j},w" value="${escapeAttr(s.w??'')}">
+        <input aria-label="${e.name} set ${j+1} reps" inputmode="numeric" data-set="${i},${j},r" value="${escapeAttr(s.r??'')}">
+        <button class="done ${s.done?'on':''}" data-done="${i},${j}" aria-label="Mark set ${j+1} ${s.done?'not done':'done'}">${s.done?'✓':'○'}</button>`).join('')}
+    </div>
+  </div>`;
+}
+
+function setChange(ev){
+  const [i,j,k]=ev.target.dataset.set.split(',');
+  active.exercises[+i].sets[+j][k]=ev.target.value;
+  persist();
+}
+
+function doneSet(ev){
+  const [i,j]=ev.currentTarget.dataset.done.split(',').map(Number);
+  const set=active.exercises[i].sets[j];
+  set.done=!set.done;
+  persist();
+  const rest=active.exercises[i].rest||90;
+  workout();
+  if(set.done)startRest(rest);
+}
+
 function persist(){save('pa_active',active)}
-function restFor(name){if(/Crunch|Raise|Abs/i.test(name))return 45;if(/Lateral|Curl|Fly|Pushdown|Extension|Face Pull|Calf/i.test(name))return 60;return 90}
-function startRest(sec){clearInterval(restTick);restEnd=Date.now()+sec*1000;const box=$('#restTimer');box.hidden=false;box.className='rest';box.innerHTML=`<div class="grow"><span class="tiny">REST</span><strong id="restOut">${format(sec)}</strong></div><button id="addRest">+30</button><button id="skipRest">Skip</button>`;$('#addRest').onclick=()=>restEnd+=30000;$('#skipRest').onclick=stopRest;const run=()=>{let left=Math.max(0,Math.ceil((restEnd-Date.now())/1000));if($('#restOut'))$('#restOut').textContent=left?format(left):'GO';if(left<=0){clearInterval(restTick);restTick=null;setTimeout(stopRest,2500)}};run();restTick=setInterval(run,250)}
-function stopRest(){clearInterval(restTick);restTick=null;const box=$('#restTimer');if(box){box.hidden=true;box.innerHTML=''}}function format(s){return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
-function swap(i){let e=active.exercises[i],choices=e.alts.map((x,n)=>`${n+1}. ${x}`).join('\n'),n=prompt(`Swap ${e.name} for:\n${choices}\n\nEnter number:`),pick=e.alts[+n-1];if(!pick)return;e.alts=[e.name,...e.alts.filter(x=>x!==pick)];e.name=pick;persist();workout()}
-function clock(){let out=$('#clock');if(!out)return;let s=Math.floor((Date.now()-active.started)/1000),m=Math.floor(s/60);out.textContent=`${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`}
-function finish(){active.finished=Date.now();history.unshift(active);save('pa_history',history);localStorage.removeItem('pa_active');active=null;historyPage()}
-function findLast(name){for(let h of history){let e=h.exercises.find(x=>x.name===name);if(e){let s=e.sets.filter(x=>x.w&&x.r).map(x=>`${x.w}×${x.r}`);if(s.length)return s.join(', ')}}return''}
-function historyPage(){app.innerHTML=`<div class="card"><h2>History</h2><p class="muted">${history.length?history.length+' saved sessions':'No sessions yet.'}</p></div>${history.map((h,i)=>`<button class="card workout" data-h="${i}"><h3>${h.name}</h3><span class="muted">${new Date(h.started).toLocaleString()}</span></button>`).join('')}`;document.querySelectorAll('[data-h]').forEach(b=>b.onclick=()=>detail(+b.dataset.h))}
-function detail(i){let h=history[i],mins=Math.round((h.finished-h.started)/60000);app.innerHTML=`<div class="card"><h2>${h.name}</h2><p class="muted">${new Date(h.started).toLocaleString()} · ${mins} min</p>${h.exercises.map(e=>`<div class="exercise"><b>${e.name}</b><div>${e.sets.filter(s=>s.w&&s.r).map(s=>`${s.w} kg × ${s.r}${s.rir!==''?` · RIR ${s.rir}`:''}`).join('<br>')||'No completed sets'}</div></div>`).join('')}${h.notes?`<p>${h.notes}</p>`:''}</div><div class="actions"><button id="share" class="primary">Share with Atlas</button><button id="del" class="danger">Delete</button></div>`;$('#share').onclick=async()=>{let text=summary(h);try{if(navigator.share)await navigator.share({title:`${h.name} workout`,text});else{await navigator.clipboard.writeText(text);alert('Session copied. Paste it into Atlas.')}}catch{}};$('#del').onclick=()=>{if(confirm('Delete this session?')){history.splice(i,1);save('pa_history',history);historyPage()}}}
-function summary(h){return `${h.name} — ${new Date(h.started).toLocaleString()}\nDuration: ${Math.round((h.finished-h.started)/60000)} min\n`+h.exercises.map(e=>`${e.name}: `+e.sets.filter(s=>s.w&&s.r).map(s=>`${s.w} kg × ${s.r}${s.rir!==''?` (RIR ${s.rir})`:''}`).join(', ')).join('\n')+(h.notes?`\nNotes: ${h.notes}`:'')}
-function library(){app.innerHTML=`<div class="card"><h2>Exercise Library</h2><p class="muted">Anatomy thumbnails and movement demos plug into this layer after the core tracker passes iPhone testing.</p></div>${Object.entries(PROGRAM).map(([g,es])=>`<div class="card"><h3>${g}</h3>${es.map(e=>`<div class="exercise"><b>${e[0]}</b><div class="tiny">${e[1]}</div><div>${e[2].split('|').map(a=>`<span class="tag">${a}</span>`).join('')}</div></div>`).join('')}</div>`).join('')}`}
-function settingsPage(){app.innerHTML=`<div class="card"><h2>Appearance</h2><p class="muted">The tracker engine stays the same; these settings only change presentation.</p><div class="setting"><b>Theme</b><div class="swatches">${Object.entries(THEMES).map(([id,t])=>`<button class="swatch ${settings.theme===id?'active':''}" data-theme="${id}">${t.name}</button>`).join('')}</div></div><div class="setting toggle"><div><b>Compact layout</b><div class="tiny">Tighter cards and spacing</div></div><input id="compact" type="checkbox" ${settings.compact?'checked':''}></div><div class="setting toggle"><div><b>Show RIR</b><div class="tiny">Optional effort field on each set</div></div><input id="showRir" type="checkbox" ${settings.showRir?'checked':''}></div><div class="setting"><b>Text size</b><select id="fontScale"><option value="0.95" ${settings.fontScale==.95?'selected':''}>Small</option><option value="1" ${settings.fontScale==1?'selected':''}>Standard</option><option value="1.08" ${settings.fontScale==1.08?'selected':''}>Large</option></select></div></div><div class="card"><h2>Data</h2><p class="muted">Back up your training history before changing phones or clearing browser data.</p><div class="actions"><button id="export">Export backup</button></div></div>`;document.querySelectorAll('[data-theme]').forEach(b=>b.onclick=()=>{settings.theme=b.dataset.theme;save('pa_settings',settings);applySettings();settingsPage()});$('#compact').onchange=e=>{settings.compact=e.target.checked;save('pa_settings',settings);applySettings()};$('#showRir').onchange=e=>{settings.showRir=e.target.checked;save('pa_settings',settings)};$('#fontScale').onchange=e=>{settings.fontScale=+e.target.value;save('pa_settings',settings);applySettings()};$('#export').onclick=exportBackup}
-function exportBackup(){const blob=new Blob([JSON.stringify({version:2,exportedAt:new Date().toISOString(),history,settings},null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download=`project-athlete-backup-${new Date().toISOString().slice(0,10)}.json`;a.click();setTimeout(()=>URL.revokeObjectURL(a.href),500)}
-if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));render();
+
+function startRest(sec){
+  clearInterval(restTick);
+  restEnd=Date.now()+sec*1000;
+  const box=$('#restTimer');
+  box.hidden=false;
+  box.className='rest';
+  box.innerHTML=`<div class="grow"><span class="tiny">REST</span><strong id="restOut">${format(sec)}</strong></div><button id="addRest">+30</button><button id="skipRest">Skip</button>`;
+  $('#addRest').onclick=()=>restEnd+=30000;
+  $('#skipRest').onclick=stopRest;
+  const run=()=>{
+    const left=Math.max(0,Math.ceil((restEnd-Date.now())/1000));
+    const out=$('#restOut');
+    if(out)out.textContent=left?format(left):'GO';
+    if(left<=0){
+      clearInterval(restTick);
+      restTick=null;
+      setTimeout(stopRest,2500);
+    }
+  };
+  run();
+  restTick=setInterval(run,250);
+}
+
+function stopRest(){
+  clearInterval(restTick);
+  restTick=null;
+  const box=$('#restTimer');
+  if(box){box.hidden=true;box.innerHTML=''}
+}
+
+function format(s){return `${Math.floor(s/60)}:${String(s%60).padStart(2,'0')}`}
+
+function clock(){
+  const out=$('#clock');
+  if(!out||!active)return;
+  const s=Math.floor((Date.now()-active.started)/1000);
+  const m=Math.floor(s/60);
+  out.textContent=`${String(m).padStart(2,'0')}:${String(s%60).padStart(2,'0')}`;
+}
+
+function finish(){
+  active.finished=Date.now();
+  history.unshift(active);
+  save('pa_history',history);
+  localStorage.removeItem('pa_active');
+  active=null;
+  stopRest();
+  historyPage();
+}
+
+function findLast(name){
+  for(const h of history){
+    const e=h.exercises?.find(x=>x.name===name);
+    if(!e)continue;
+    const sets=e.sets?.filter(s=>s.w!==''&&s.r!=='').map(s=>`${s.w}×${s.r}`)||[];
+    if(sets.length)return sets.join(' · ');
+  }
+  return '';
+}
+
+function historyPage(){
+  clearInterval(sessionTick);
+  const rows=history.map((h,i)=>{
+    const mins=h.finished&&h.started?Math.max(1,Math.round((h.finished-h.started)/60000)):null;
+    return `<button class="card workout" data-history="${i}"><div class="historyRow"><div><h3>${h.name}</h3><span class="muted">${new Date(h.started).toLocaleDateString()}</span></div><div class="right tiny">${mins?mins+' min':''}</div></div></button>`;
+  }).join('');
+  app.innerHTML=`<div class="card"><h2>History</h2><p class="muted">${history.length?history.length+' saved workout'+(history.length===1?'':'s'):'Your completed workouts will appear here.'}</p></div>${rows||'<div class="empty">No workouts saved yet.</div>'}`;
+  document.querySelectorAll('[data-history]').forEach(b=>b.onclick=()=>detail(+b.dataset.history));
+}
+
+function detail(i){
+  const h=history[i];
+  const mins=h.finished&&h.started?Math.max(1,Math.round((h.finished-h.started)/60000)):null;
+  app.innerHTML=`<div class="card">
+    <h2>${h.name}</h2>
+    <p class="muted">${new Date(h.started).toLocaleString()}${mins?' · '+mins+' min':''}</p>
+    ${h.exercises.map(e=>`<div class="exercise"><b>${e.name}</b><div class="prescription">${e.reps?`${e.sets.length} × ${e.reps} · `:''}Tempo ${e.tempo||TEMPO}</div><div>${(e.sets||[]).filter(s=>s.w!==''&&s.r!=='').map(s=>`${s.w} kg × ${s.r}`).join('<br>')||'<span class="muted">No logged sets</span>'}</div></div>`).join('')}
+    ${h.notes?`<p>${escapeHtml(h.notes)}</p>`:''}
+  </div>
+  <div class="actions"><button id="back">Back</button><button id="delete" class="danger">Delete</button></div>`;
+  $('#back').onclick=historyPage;
+  $('#delete').onclick=()=>{
+    if(confirm('Delete this workout?')){
+      history.splice(i,1);
+      save('pa_history',history);
+      historyPage();
+    }
+  };
+}
+
+function escapeHtml(value){return String(value).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function escapeAttr(value){return escapeHtml(value)}
+
+if('serviceWorker'in navigator)addEventListener('load',()=>navigator.serviceWorker.register('./service-worker.js').catch(()=>{}));
+render();
