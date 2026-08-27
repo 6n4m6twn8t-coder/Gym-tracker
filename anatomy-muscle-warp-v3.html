@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Athlete — Boundary Warp V3</title>
+<style>
+:root{color-scheme:dark;--bg:#07090c;--panel:#11151b;--line:#292f38;--text:#f2efe8;--muted:#9aa1aa;--gold:#d7b75d;--cyan:#25e6ff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:calc(12px + env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom))}.wrap{max-width:540px;margin:auto}h1{font-size:21px;margin:0 0 5px}.sub{font-size:12px;line-height:1.45;color:var(--muted);margin:0 0 10px}.stage{position:relative;width:100%;aspect-ratio:2/3;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#11151a}.stage>*{position:absolute;inset:0;width:100%;height:100%}canvas{display:block}.map{z-index:3;pointer-events:none}.map-line{fill:none;stroke:var(--cyan);stroke-width:1.25;stroke-opacity:.56;vector-effect:non-scaling-stroke}.outline-line{fill:none;stroke:var(--cyan);stroke-width:2;stroke-opacity:.88;vector-effect:non-scaling-stroke}.status{position:absolute;z-index:5;left:12px;top:12px;padding:8px 10px;border-radius:10px;background:rgba(7,9,12,.86);font-size:11px;color:#d8dde3}.status.ok{color:#a9e7b0}.status.err{color:#ff9c9c}.panel{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}button{border:1px solid #3a414c;background:#181d24;color:var(--text);border-radius:11px;padding:10px 7px;font-weight:700;font-size:13px}button.active{border-color:#7d6933;background:#211c10;color:#ead17a}.readout{margin-top:10px;padding:9px 10px;border-radius:10px;background:#0b0e12;border:1px solid #222831;font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:#c8cdd3;line-height:1.45}.note{font-size:11px;color:#7f8790;line-height:1.45;margin-top:8px}.pill{display:inline-block;margin:8px 5px 0 0;padding:5px 8px;border:1px solid #6c5b2d;border-radius:999px;color:#e3c970;background:#1d190e;font-size:10px}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Boundary-anchored muscle warp V3</h1>
+<p class="sub">The outer body stays locked. Selected muscle textures are now pinned to the exact MuscleMap perimeter and smoothly deformed inward, instead of stretching a rectangular crop.</p>
+<div class="stage">
+  <canvas id="body" width="1024" height="1536"></canvas>
+  <svg id="mapSvg" class="map" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid meet"><g id="mapLines"></g></svg>
+  <div id="status" class="status">Loading detailed source…</div>
+</div>
+<div class="panel">
+  <div class="grid"><button id="warpBtn" class="active">Boundary ON</button><button id="mapBtn" class="active">Map ON</button><button id="goldBtn" class="active">Gold ON</button></div>
+  <div><span class="pill">CHEST</span><span class="pill">DELTS</span><span class="pill">ABS</span><span class="pill">QUADS</span></div>
+  <div id="readout" class="readout">Preparing boundary meshes…</div>
+  <div class="note">Boundary OFF shows the rigid exact-path fill. Boundary ON locks each selected muscle perimeter to the SVG container and bends only its internal detail. No per-muscle sliders.</div>
+</div>
+</div>
+<script type="module">
+import { MALE_FRONT } from 'https://esm.sh/@musclemap/assets@1.0.1?bundle';
+const W=1024,H=1536,CX=MALE_FRONT.centerX,NS='http://www.w3.org/2000/svg';
+const canvas=document.getElementById('body'),ctx=canvas.getContext('2d',{alpha:true});
+const mapLines=document.getElementById('mapLines'),mapSvg=document.getElementById('mapSvg'),status=document.getElementById('status'),readout=document.getElementById('readout');
+const BASE={dx:-1,dy:2,s:1,sx:.845,sy:1};
+let img=null,boundaryOn=true,mapOn=true,goldOn=true;
+const pathCache=new Map(),meshCache=new Map();
+const mirrorSvg=()=>`translate(${2*CX} 0) scale(-1 1)`;
+function addPath(parent,d,cls,transform=''){const p=document.createElementNS(NS,'path');p.setAttribute('d',d);p.setAttribute('class',cls);if(transform)p.setAttribute('transform',transform);parent.appendChild(p)}
+for(const o of MALE_FRONT.outline){addPath(mapLines,o.d,'outline-line');if(o.side==='LEFT')addPath(mapLines,o.d,'outline-line',mirrorSvg())}
+for(const m of MALE_FRONT.muscles){addPath(mapLines,m.d,'map-line');if(m.side==='LEFT')addPath(mapLines,m.d,'map-line',mirrorSvg())}
+function key(m,mirrored){return `${m.id||m.group}:${mirrored?'R':'N'}`}
+function isTarget(m){const s=(String(m.group||'')+' '+String(m.id||'')).toUpperCase();return s.includes('CHEST')||s.includes('SHOULDER')||s.includes('DELT')||s.includes('ABS')||s.includes('RECTUS')||s.includes('QUAD')}
+function baseRect(){const w=W*BASE.s*BASE.sx,h=H*BASE.s*BASE.sy;return{x:(W-w)/2+BASE.dx,y:(H-h)/2+BASE.dy,w,h}}
+function drawBaseSource(alpha=1){const r=baseRect();ctx.globalAlpha=alpha;ctx.drawImage(img,r.x,r.y,r.w,r.h);ctx.globalAlpha=1}
+function makeBBox(m,mirrored){const svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.style.cssText='position:absolute;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none';const p=document.createElementNS(NS,'path');p.setAttribute('d',m.d);svg.appendChild(p);document.body.appendChild(svg);const b=p.getBBox();svg.remove();return mirrored?{x:2*CX-(b.x+b.width),y:b.y,width:b.width,height:b.height}:{x:b.x,y:b.y,width:b.width,height:b.height}}
+function getPath(m){let p=pathCache.get(m.d);if(!p){p=new Path2D(m.d);pathCache.set(m.d,p)}return p}
+function inside(m,mirrored,x,y){return ctx.isPointInPath(getPath(m),mirrored?2*CX-x:x,y)}
+function findInterior(m,mirrored,b){const cx=b.x+b.width/2,cy=b.y+b.height/2;if(inside(m,mirrored,cx,cy))return{x:cx,y:cy};let best=null,bestD=Infinity;for(let gy=1;gy<10;gy++)for(let gx=1;gx<10;gx++){const x=b.x+b.width*gx/10,y=b.y+b.height*gy/10;if(inside(m,mirrored,x,y)){const d=(x-cx)**2+(y-cy)**2;if(d<bestD){bestD=d;best={x,y}}}}return best||{x:cx,y:cy}}
+function boundaryPoint(m,mirrored,c,angle,b){const dx=Math.cos(angle),dy=Math.sin(angle),max=Math.hypot(b.width,b.height)*1.35;let lo=0,hi=max;for(let i=0;i<20;i++){const mid=(lo+hi)/2,x=c.x+dx*mid,y=c.y+dy*mid;if(inside(m,mirrored,x,y))lo=mid;else hi=mid}return{x:c.x+dx*lo,y:c.y+dy*lo}}
+function sourceGeometry(b,c,m){const br=baseRect(),iw=img.naturalWidth,ih=img.naturalHeight;const mapX=x=>(x-br.x)/br.w*iw,mapY=y=>(y-br.y)/br.h*ih;const s=(String(m.group||'')+' '+String(m.id||'')).toUpperCase();let inset=.78;if(s.includes('ABS')||s.includes('RECTUS'))inset=.72;if(s.includes('SHOULDER')||s.includes('DELT'))inset=.75;if(s.includes('QUAD'))inset=.80;return{cx:mapX(c.x),cy:mapY(c.y),rx:b.width/br.w*iw*.5*inset,ry:b.height/br.h*ih*.5*inset}}
+function buildRadialMesh(m,mirrored){const b=makeBBox(m,mirrored),c=findInterior(m,mirrored,b),src=sourceGeometry(b,c,m);const area=b.width*b.height,sectors=area>26000?36:area>10000?30:24,rings=5;const srcPts=[{x:src.cx,y:src.cy}],dstPts=[{x:c.x,y:c.y}],bound=[];for(let a=0;a<sectors;a++)bound.push(boundaryPoint(m,mirrored,c,a/sectors*Math.PI*2,b));for(let r=1;r<=rings;r++){const t=r/rings;const eased=Math.pow(t,.92);for(let a=0;a<sectors;a++){const ang=a/sectors*Math.PI*2,bp=bound[a];srcPts.push({x:src.cx+Math.cos(ang)*src.rx*t,y:src.cy+Math.sin(ang)*src.ry*t});dstPts.push({x:c.x+(bp.x-c.x)*eased,y:c.y+(bp.y-c.y)*eased})}}
+const tris=[],idx=(r,a)=>1+(r-1)*sectors+((a+sectors)%sectors);for(let a=0;a<sectors;a++)tris.push([0,idx(1,a),idx(1,a+1)]);for(let r=1;r<rings;r++)for(let a=0;a<sectors;a++){const a0=idx(r,a),a1=idx(r,a+1),b0=idx(r+1,a),b1=idx(r+1,a+1);tris.push([a0,b0,a1],[a1,b0,b1])}return{m,mirrored,b,c,srcPts,dstPts,tris}}
+function matrixFor(s0,s1,s2,d0,d1,d2){const den=s0.x*(s1.y-s2.y)+s1.x*(s2.y-s0.y)+s2.x*(s0.y-s1.y);if(Math.abs(den)<1e-6)return null;return{a:(d0.x*(s1.y-s2.y)+d1.x*(s2.y-s0.y)+d2.x*(s0.y-s1.y))/den,b:(d0.y*(s1.y-s2.y)+d1.y*(s2.y-s0.y)+d2.y*(s0.y-s1.y))/den,c:(d0.x*(s2.x-s1.x)+d1.x*(s0.x-s2.x)+d2.x*(s1.x-s0.x))/den,d:(d0.y*(s2.x-s1.x)+d1.y*(s0.x-s2.x)+d2.y*(s1.x-s0.x))/den,e:(d0.x*(s1.x*s2.y-s2.x*s1.y)+d1.x*(s2.x*s0.y-s0.x*s2.y)+d2.x*(s0.x*s1.y-s1.x*s0.y))/den,f:(d0.y*(s1.x*s2.y-s2.x*s1.y)+d1.y*(s2.x*s0.y-s0.x*s2.y)+d2.y*(s0.x*s1.y-s1.x*s0.y))/den}}
+function drawTri(mesh,t){const [i0,i1,i2]=t,s0=mesh.srcPts[i0],s1=mesh.srcPts[i1],s2=mesh.srcPts[i2],d0=mesh.dstPts[i0],d1=mesh.dstPts[i1],d2=mesh.dstPts[i2],M=matrixFor(s0,s1,s2,d0,d1,d2);if(!M)return;ctx.save();const tri=new Path2D();tri.moveTo(d0.x,d0.y);tri.lineTo(d1.x,d1.y);tri.lineTo(d2.x,d2.y);tri.closePath();ctx.clip(tri);ctx.setTransform(M.a,M.b,M.c,M.d,M.e,M.f);ctx.drawImage(img,0,0);ctx.restore()}
+function clipExact(m,mirrored,fn){ctx.save();if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}ctx.clip(getPath(m));if(mirrored){ctx.scale(-1,1);ctx.translate(-2*CX,0)}fn();ctx.restore()}
+function drawRigid(m,mirrored,alpha=1){clipExact(m,mirrored,()=>drawBaseSource(alpha))}
+function drawBoundary(mesh){clipExact(mesh.m,mesh.mirrored,()=>{ctx.globalAlpha=.94;for(const t of mesh.tris)drawTri(mesh,t);ctx.globalAlpha=1})}
+function drawOutline(o,mirrored){ctx.save();if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}ctx.clip(new Path2D(o.d));ctx.globalAlpha=.78;if(mirrored){ctx.scale(-1,1);ctx.translate(-2*CX,0)}drawBaseSource();ctx.restore()}
+function gold(m,mirrored){ctx.save();if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}ctx.clip(getPath(m));ctx.globalCompositeOperation='color';ctx.fillStyle='rgb(215,183,93)';ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='screen';const g=ctx.createRadialGradient(W*.5,H*.27,15,W*.5,H*.36,260);g.addColorStop(0,'rgba(255,235,160,.24)');g.addColorStop(1,'rgba(255,220,110,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.restore()}
+async function buildMeshes(){const items=[];for(const m of MALE_FRONT.muscles)if(isTarget(m)){items.push([m,false]);if(m.side==='LEFT')items.push([m,true])}let n=0;for(const [m,mirrored] of items){meshCache.set(key(m,mirrored),buildRadialMesh(m,mirrored));n++;if(n%3===0){status.textContent=`Building boundary meshes ${n}/${items.length}…`;await new Promise(r=>requestAnimationFrame(r))}}readout.textContent=`Boundary meshes: ${n}\nPerimeter: exact MuscleMap path\nInterior: 5-ring radial deformation\nOuter body: locked\nManual per-muscle edits: none`}
+function render(){if(!img)return;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);const bg=ctx.createRadialGradient(W*.5,H*.36,60,W*.5,H*.5,820);bg.addColorStop(0,'#33363a');bg.addColorStop(.52,'#181b1f');bg.addColorStop(1,'#07090c');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(const o of MALE_FRONT.outline){drawOutline(o,false);if(o.side==='LEFT')drawOutline(o,true)}for(const m of MALE_FRONT.muscles){drawRigid(m,false,1);if(m.side==='LEFT')drawRigid(m,true,1)}if(boundaryOn){for(const m of MALE_FRONT.muscles)if(isTarget(m)){const a=meshCache.get(key(m,false));if(a)drawBoundary(a);if(m.side==='LEFT'){const b=meshCache.get(key(m,true));if(b)drawBoundary(b)}}}if(goldOn)for(const m of MALE_FRONT.muscles){if(m.group==='CHEST'||String(m.id||'').startsWith('CHEST_')){gold(m,false);if(m.side==='LEFT')gold(m,true)}}}
+document.getElementById('warpBtn').onclick=()=>{boundaryOn=!boundaryOn;const b=document.getElementById('warpBtn');b.classList.toggle('active',boundaryOn);b.textContent=`Boundary ${boundaryOn?'ON':'OFF'}`;render()};document.getElementById('mapBtn').onclick=()=>{mapOn=!mapOn;mapSvg.style.display=mapOn?'block':'none';const b=document.getElementById('mapBtn');b.classList.toggle('active',mapOn);b.textContent=`Map ${mapOn?'ON':'OFF'}`};document.getElementById('goldBtn').onclick=()=>{goldOn=!goldOn;const b=document.getElementById('goldBtn');b.classList.toggle('active',goldOn);b.textContent=`Gold ${goldOn?'ON':'OFF'}`;render()};
+img=new Image();img.onload=async()=>{status.textContent='Detailed source loaded ✓';await buildMeshes();render();status.textContent='Boundary warp ready ✓';status.classList.add('ok');setTimeout(()=>status.style.display='none',1400)};img.onerror=()=>{status.textContent='Detailed source failed to load';status.classList.add('err')};img.src='assets/anatomy-detail-front-fit-256.webp?v=9';
+</script>
+</body></html>
