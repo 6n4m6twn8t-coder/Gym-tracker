@@ -29,9 +29,16 @@
 .rotationItem:nth-child(4) .homeArtIcon img,
 .homeSession[data-home-start="Upper / Chest"] .homeArtIcon img{transform:scale(.94)}
 
+/* Polished stat artwork */
+.homeStatIcon{width:34px;height:34px;left:11px;top:13px}
+.homeStatIcon .homeStatArtIcon{width:34px;height:34px}
+.homeStatIcon .homeStatArtIcon img{filter:saturate(.92) brightness(1.02);opacity:.96;filter:drop-shadow(0 0 4px rgba(241,207,105,.10)) saturate(.92) brightness(1.02)}
+
 @media(max-width:390px){
   .homeHeroMark.iconArt.assetArt{width:148px;height:148px;right:-6px;top:13px;opacity:.23}
   .rotationDot{width:37px;height:37px}.rotationDot .homeArtIcon{width:28px;height:28px}
   .homeSession{grid-template-columns:44px minmax(0,1fr) auto}
   .homeSessionIcon{width:42px;height:42px}.homeSessionIcon .homeArtIcon{width:33px;height:33px}
+  .homeStatIcon{width:31px;height:31px;left:10px;top:13px}
+  .homeStatIcon .homeStatArtIcon{width:31px;height:31px}
 }
