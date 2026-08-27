@@ -23,6 +23,12 @@
 
 .homeStatIcon .homeIcon svg{fill:none!important;stroke:currentColor!important}
 
+/* Final visual-weight balance only */
+.rotationItem:nth-child(3) .homeArtIcon img,
+.homeSession[data-home-start="Legs"] .homeArtIcon img{transform:scale(1.12)}
+.rotationItem:nth-child(4) .homeArtIcon img,
+.homeSession[data-home-start="Upper / Chest"] .homeArtIcon img{transform:scale(.94)}
+
 @media(max-width:390px){
   .homeHeroMark.iconArt.assetArt{width:148px;height:148px;right:-6px;top:13px;opacity:.23}
   .rotationDot{width:37px;height:37px}.rotationDot .homeArtIcon{width:28px;height:28px}
