@@ -1,0 +1,56 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Athlete — Detail Push V8</title>
+<style>
+:root{color-scheme:dark}html,body{margin:0;background:#07090c;color:#f2efe8;font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}.loading{min-height:100vh;display:grid;place-items:center;padding:24px;text-align:center}.loading div{max-width:420px}.loading b{display:block;font-size:20px;margin-bottom:8px}.loading span{color:#9aa1aa;font-size:13px}
+</style>
+</head>
+<body>
+<div class="loading"><div><b>Loading V8 detail pass…</b><span>V7 geometry is being reused unchanged. Only surface-detail strength is increased.</span></div></div>
+<script>
+(async()=>{
+  try{
+    const r=await fetch('./anatomy-muscle-texture-v7.html?v=locked-v7');
+    if(!r.ok) throw new Error('Could not load V7 base');
+    let h=await r.text();
+
+    h=h.replace('Project Athlete — Exact Muscle Detail V7','Project Athlete — Detail Push V8');
+    h=h.replace('Exact muscle detail V7','Detail push V8');
+    h=h.replace(
+      'V6 geometry is locked. This version changes only the surface: exact SVG muscle volume plus mid-frequency ridges and fine texture extracted from the detailed render.',
+      'V7 geometry is locked. This version pushes only the surface detail: stronger muscle ridges, deeper grooves and higher local contrast while every SVG boundary stays unchanged.'
+    );
+    h=h.replace('V6 SHAPES LOCKED','V7 SHAPES LOCKED');
+    h=h.replace('MULTI-BAND DETAIL','STRONG DETAIL PASS');
+    h=h.replace(
+      "function isChest(m){const s=(String(m.group||'')+' '+String(m.id||'')).toUpperCase();return s.includes('CHEST')}",
+      "function isChest(m){const s=(String(m.group||'')+' '+String(m.id||'')).toUpperCase();return s.includes('CHEST')}function detailProfile(m){const s=(String(m.group||'')+' '+String(m.id||'')).toUpperCase();if(s.includes('CHEST'))return{mid:2.55,micro:1.80,fine:1.35,gain:1.18};if(s.includes('SHOULDER')||s.includes('DELT'))return{mid:2.35,micro:1.70,fine:1.30,gain:1.16};if(s.includes('ABS')||s.includes('RECTUS'))return{mid:2.45,micro:1.75,fine:1.30,gain:1.18};if(s.includes('QUAD'))return{mid:2.40,micro:1.72,fine:1.28,gain:1.17};return{mid:1.75,micro:1.30,fine:1.08,gain:1.05}}"
+    );
+    h=h.replace(
+      'const out=new ImageData(M.mw,M.mh),chest=isChest(m)&&goldOn;',
+      'const out=new ImageData(M.mw,M.mh),chest=isChest(m)&&goldOn,profile=detailProfile(m);'
+    );
+    h=h.replace(
+      'let tex=mid*1.45+micro*1.10+fine*.95;tex=Math.max(-34,Math.min(34,tex));lum+=tex*textureGate',
+      'let tex=mid*profile.mid+micro*profile.micro+fine*profile.fine;if(tex<0)tex*=1.16;tex=Math.max(-48,Math.min(48,tex));lum+=tex*textureGate*profile.gain'
+    );
+    h=h.replace(
+      'Mid detail: blur1.5 − blur13\\nMicro detail: blur1.5 − blur6\\nFine detail: original − blur1.5\\nBoundary protection: ON',
+      'Geometry: V7 locked\\nPriority detail: chest / delts / abs / quads\\nMid ridges: stronger\\nGrooves: deeper\\nFine texture: stronger\\nBoundary protection: ON'
+    );
+    h=h.replace('V7 detail pass ready ✓','V8 detail push ready ✓');
+    h=h.replace("assets/anatomy-detail-front-fit-256.webp?v=11","assets/anatomy-detail-front-fit-256.webp?v=12");
+
+    document.open();
+    document.write(h);
+    document.close();
+  }catch(e){
+    document.body.innerHTML='<div class="loading"><div><b>V8 failed to load</b><span>'+String(e.message||e)+'</span></div></div>';
+  }
+})();
+</script>
+</body>
+</html>
