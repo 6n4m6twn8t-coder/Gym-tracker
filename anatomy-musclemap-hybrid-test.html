@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
+<title>Project Athlete — Hybrid Anatomy</title>
+<style>
+:root{--bg:#08090b;--panel:#111318;--line:#252931;--text:#f4f2ea;--muted:#8f949d;--gold:#d7b75d}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+body{min-height:100vh;padding:calc(18px + env(safe-area-inset-top)) 16px calc(26px + env(safe-area-inset-bottom))}
+.wrap{max-width:520px;margin:0 auto}.eyebrow{font-size:11px;letter-spacing:.18em;color:var(--gold);font-weight:800;margin-bottom:8px}
+h1{margin:0 0 6px;font-size:26px;line-height:1.05}.sub{margin:0 0 16px;color:var(--muted);font-size:14px;line-height:1.45}
+.card{background:linear-gradient(180deg,#121419,#0d0f13);border:1px solid var(--line);border-radius:22px;padding:12px;box-shadow:0 18px 50px rgba(0,0,0,.35)}
+.figure{position:relative;width:100%;aspect-ratio:2/3;overflow:hidden;border-radius:16px;background:#0a0c0f}
+.figure img,.figure svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+.figure img{object-fit:contain;filter:grayscale(1) brightness(.84) contrast(1.12);opacity:.98}
+.figure svg{pointer-events:none}
+.pec{fill:url(#goldFill);opacity:.76;filter:url(#softGlow);transition:opacity .2s ease}
+.figure.off .pec{opacity:0}
+.controls{display:flex;gap:10px;margin-top:12px}.btn{flex:1;border:1px solid var(--line);background:#171a20;color:var(--text);padding:12px 14px;border-radius:14px;font-weight:700;font-size:14px}.btn.active{border-color:#6a5a2c;background:#1d1a11;color:#ead486}
+.note{margin:12px 2px 0;color:var(--muted);font-size:12px;line-height:1.45}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">PROJECT ATHLETE · ANATOMY TEST</div>
+  <h1>Mapped body + detailed base</h1>
+  <p class="sub">This uses the body image and muscle paths from the same MuscleMap asset set, so the chest geometry stays aligned.</p>
+
+  <div class="card">
+    <div class="figure" id="figure">
+      <img src="https://unpkg.com/@musclemap/assets@1.0.1/bodies/male-front.webp" alt="Male front anatomy" />
+      <svg viewBox="0 0 1024 1536" aria-hidden="true" preserveAspectRatio="xMidYMid meet">
+        <defs>
+          <linearGradient id="goldFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0%" stop-color="#f1d77a"/>
+            <stop offset="52%" stop-color="#d7b75d"/>
+            <stop offset="100%" stop-color="#9d7b2d"/>
+          </linearGradient>
+          <filter id="softGlow" x="-25%" y="-25%" width="150%" height="150%">
+            <feGaussianBlur stdDeviation="4" result="blur"/>
+            <feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <path class="pec" d="M392.7 340.8C389.8 343.7 385.7 347.8 382.3 352.1 378.9 356.4 376.2 360.9 373.5 365.5 370.8 370.2 368.1 375 366.4 378.5 364.7 382.1 363.9 384.2 364.4 387.4 364.8 390.6 366.4 394.9 368.5 399.2 370.7 403.4 373.3 407.7 376 411.9 378.8 416.1 381.6 420.3 384.9 424.8 388.3 429.4 392.1 434.4 395.6 438.4 399.2 442.4 402.5 445.5 406.3 448.2 410.2 450.9 414.6 453.2 419.3 454.9 424 456.6 429.1 457.7 434.5 458.5 439.8 459.2 445.4 459.4 451 459.4 456.5 459.4 462.1 459.1 468.5 457.6 474.9 456.1 482.2 453.5 487.6 450.6 493 447.7 496.4 444.6 499.1 440.9 501.7 437.3 503.6 433 504.9 426.9 506.1 420.7 506.7 412.7 506.8 401.5 507 390.3 506.7 375.8 506.4 366.7 506 357.5 505.5 353.6 503.8 349.4 502.1 345.3 499.3 340.9 495.9 337.4 492.6 334 488.9 331.5 482.6 329.1 476.2 326.6 467.3 324.3 459.6 322.9 451.9 321.5 445.4 321.1 439.2 321 433 320.9 427.2 321.3 422 322.7 416.7 324.2 412 326.7 408.2 328.9 404.4 331.1 401.5 332.9 399.3 334.6 397.1 336.3 395.5 338 392.7 340.8Z"/>
+        <path class="pec" d="M519.8 351.1C519 353.8 518 357.8 517.3 362.9 516.7 368 516.6 374.2 516.4 380.1 516.2 386.1 516 391.7 515.9 397.3 515.8 402.8 515.8 408.2 516.3 413.4 516.7 418.7 517.7 423.8 519 428.3 520.3 432.8 521.9 436.7 525.2 440.3 528.4 443.9 533.3 447.3 538.1 449.9 542.9 452.5 547.6 454.4 552.3 455.6 557 456.9 561.7 457.6 566.3 458.1 570.8 458.6 575.3 458.9 579.8 459.1 584.3 459.2 588.7 459.2 593.7 458.5 598.7 457.7 604.1 456.2 608.8 454.1 613.5 452 617.4 449.4 620.3 447.2 623.2 444.9 625 443.2 629.3 437.5 633.5 431.9 640.2 422.5 644.6 415.8 649 409 651.1 405 653.2 400.9 655.2 396.8 657.2 392.7 658.2 389.6 659.2 386.6 659.2 384.6 657.6 380.6 656 376.6 652.6 370.6 649.2 365.1 645.8 359.6 642.4 354.6 638.7 350.1 635 345.7 631.2 341.9 627 338.2 622.7 334.5 618.1 331.1 612.7 328.3 607.3 325.5 601.1 323.4 595.6 322.4 590.1 321.4 585.2 321.5 580 321.7 574.8 322 569.3 322.4 564 323.2 558.8 324 553.7 325.1 548.8 326.5 543.8 327.8 539 329.5 535 332.1 531.1 334.6 528 338 525.9 340.4 523.9 342.9 522.7 344.4 521.9 345.8 521.1 347.2 520.6 348.4 519.8 351.1Z"/>
+      </svg>
+    </div>
+    <div class="controls">
+      <button class="btn active" id="toggle">Chest highlight ON</button>
+    </div>
+    <div class="note">The body and SVG surfaces share the same 1024×1536 coordinate system. Toggle the highlight to confirm the underlying body never moves.</div>
+  </div>
+</div>
+<script>
+const figure=document.getElementById('figure');
+const toggle=document.getElementById('toggle');
+toggle.addEventListener('click',()=>{
+  const off=figure.classList.toggle('off');
+  toggle.textContent=off?'Chest highlight OFF':'Chest highlight ON';
+  toggle.classList.toggle('active',!off);
+});
+</script>
+</body>
+</html>
