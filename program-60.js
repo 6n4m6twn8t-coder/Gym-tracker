@@ -136,5 +136,117 @@ finish=function(){
   showFinishMessage(message);
 };
 
-// Re-render the session picker or current workout with the updated four-day rotation and calm cue layer.
+const ROTATION=['Push','Pull','Legs','Upper / Chest'];
+const HOME_META={
+  Push:{muscles:'Chest · Shoulders · Triceps',time:'55–60 min',mark:'P'},
+  Pull:{muscles:'Back · Biceps · Rear delts',time:'55–60 min',mark:'P'},
+  Legs:{muscles:'Quads · Hamstrings · Glutes',time:'55–60 min',mark:'L'},
+  'Upper / Chest':{muscles:'Chest priority · Upper body',time:'55–60 min',mark:'U'}
+};
+
+function lastRotationWorkout(){
+  return history.find(h=>ROTATION.includes(h.name))||null;
+}
+
+function nextSessionName(){
+  const last=lastRotationWorkout();
+  if(!last)return ROTATION[0];
+  const i=ROTATION.indexOf(last.name);
+  return ROTATION[(i+1)%ROTATION.length];
+}
+
+function startOfWeek(){
+  const d=new Date();
+  d.setHours(0,0,0,0);
+  const daysSinceMonday=(d.getDay()+6)%7;
+  d.setDate(d.getDate()-daysSinceMonday);
+  return d.getTime();
+}
+
+function workoutsThisWeek(){
+  const since=startOfWeek();
+  return history.filter(h=>ROTATION.includes(h.name)&&Number(h.started)>=since).length;
+}
+
+function relativeDay(ts){
+  if(!ts)return '';
+  const now=new Date();
+  const then=new Date(ts);
+  now.setHours(0,0,0,0);
+  then.setHours(0,0,0,0);
+  const days=Math.max(0,Math.round((now-then)/86400000));
+  if(days===0)return 'Today';
+  if(days===1)return 'Yesterday';
+  return `${days} days ago`;
+}
+
+function rotationAbbr(name){
+  return name==='Upper / Chest'?'U/C':name.slice(0,1).toUpperCase();
+}
+
+function homeHTML(){
+  const next=nextSessionName();
+  const meta=HOME_META[next];
+  const last=lastRotationWorkout();
+  const week=workoutsThisWeek();
+  return `
+    <section class="homeIntro">
+      <span class="homeEyebrow">TODAY'S TRAINING</span>
+      <p>Do the work in front of you.</p>
+    </section>
+
+    <section class="homeHero">
+      <div class="homeHeroMark">${escapeHtml(meta.mark)}</div>
+      <span class="homeHeroLabel">NEXT SESSION</span>
+      <div class="homeHeroTitle">${escapeHtml(next)}</div>
+      <div class="homeHeroMuscles">${escapeHtml(meta.muscles)}</div>
+      <div class="homeHeroTime">${escapeHtml(meta.time)}</div>
+      <button class="primary homeStart" data-home-start="${escapeAttr(next)}">Start ${escapeHtml(next)}</button>
+    </section>
+
+    <section class="rotationStrip" aria-label="Training rotation">
+      ${ROTATION.map(name=>`<div class="rotationItem ${name===next?'active':''}"><span class="rotationDot">${rotationAbbr(name)}</span><span class="rotationLabel">${escapeHtml(name)}</span></div>`).join('')}
+    </section>
+
+    <section class="homeStats">
+      <div class="homeStat">
+        <small>LAST WORKOUT</small>
+        ${last?`<strong>${escapeHtml(last.name)}</strong><span>${relativeDay(last.started)}</span>`:`<strong>No sessions yet</strong><span>Start with ${escapeHtml(next)}</span>`}
+      </div>
+      <div class="homeStat">
+        <small>THIS WEEK</small>
+        <strong>${week}</strong>
+        <span>${week===1?'session':'sessions'}</span>
+      </div>
+    </section>
+
+    <div class="homeSectionLabel">TRAINING ROTATION</div>
+    ${ROTATION.map(name=>{
+      const m=HOME_META[name];
+      return `<button class="homeSession ${name===next?'next':''}" data-home-start="${escapeAttr(name)}">
+        <span class="homeSessionIcon">${rotationAbbr(name)}</span>
+        <span><span class="homeSessionTitle">${escapeHtml(name)}</span><span class="homeSessionSub">${escapeHtml(m.muscles)}</span></span>
+        <span class="homeSessionTime">${escapeHtml(m.time)}</span>
+      </button>`;
+    }).join('')}`;
+}
+
+function renderHome(){
+  stopRest();
+  app.innerHTML=homeHTML();
+  document.querySelectorAll('[data-home-start]').forEach(b=>b.onclick=()=>start(b.dataset.homeStart));
+}
+
+render=function(page='today'){
+  clearInterval(sessionTick);
+  sessionTick=null;
+  similarOpen.clear();
+  noteOpen.clear();
+  if(page!=='today')stopRest();
+  if(active&&page==='today')return workout();
+  if(page==='history')return historyPage();
+  renderHome();
+};
+
+// Re-render with the updated four-day rotation, calm cue layer and polished home screen.
 render();
