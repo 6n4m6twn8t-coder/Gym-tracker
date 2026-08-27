@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Athlete — Guarded Muscle Fit</title>
+<style>
+:root{color-scheme:dark;--bg:#07090c;--panel:#11151b;--line:#292f38;--text:#f2efe8;--muted:#9aa1aa;--gold:#d7b75d;--cyan:#25e6ff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:calc(12px + env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom))}.wrap{max-width:540px;margin:auto}h1{font-size:21px;margin:0 0 5px}.sub{font-size:12px;line-height:1.45;color:var(--muted);margin:0 0 10px}.stage{position:relative;width:100%;aspect-ratio:2/3;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#11151a}.stage>*{position:absolute;inset:0;width:100%;height:100%}canvas{display:block}.map{z-index:3;pointer-events:none}.map-line{fill:none;stroke:var(--cyan);stroke-width:1.2;stroke-opacity:.52;vector-effect:non-scaling-stroke}.outline-line{fill:none;stroke:var(--cyan);stroke-width:2;stroke-opacity:.86;vector-effect:non-scaling-stroke}.status{position:absolute;z-index:5;left:12px;top:12px;padding:8px 10px;border-radius:10px;background:rgba(7,9,12,.86);font-size:11px;color:#d8dde3}.status.ok{color:#a9e7b0}.status.err{color:#ff9c9c}.panel{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}button{border:1px solid #3a414c;background:#181d24;color:var(--text);border-radius:11px;padding:10px 7px;font-weight:700;font-size:13px}button.active{border-color:#7d6933;background:#211c10;color:#ead17a}.readout{margin-top:10px;padding:9px 10px;border-radius:10px;background:#0b0e12;border:1px solid #222831;font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:#c8cdd3;line-height:1.45}.note{font-size:11px;color:#7f8790;line-height:1.45;margin-top:8px}.pill{display:inline-block;margin:8px 5px 0 0;padding:5px 8px;border:1px solid #6c5b2d;border-radius:999px;color:#e3c970;background:#1d190e;font-size:10px}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Guarded local muscle fit</h1>
+<p class="sub">The body stays locked. Only chest, delts, abs and quads get local mesh fitting, using tighter source crops from inside each muscle so neighbouring seams are not stretched into the container.</p>
+<div class="stage">
+  <canvas id="body" width="1024" height="1536"></canvas>
+  <svg id="mapSvg" class="map" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid meet"><g id="mapLines"></g></svg>
+  <div id="status" class="status">Loading detailed source…</div>
+</div>
+<div class="panel">
+  <div class="grid"><button id="fitBtn" class="active">Local fit ON</button><button id="mapBtn" class="active">Map ON</button><button id="goldBtn">Gold OFF</button></div>
+  <div><span class="pill">CHEST</span><span class="pill">DELTS</span><span class="pill">ABS</span><span class="pill">QUADS</span></div>
+  <div id="readout" class="readout">Preparing guarded local meshes…</div>
+  <div class="note">Local fit OFF = the clean rigid clipped-body baseline. Local fit ON = only the four major front groups are reshaped. Smaller muscles stay untouched to avoid tearing and dark wedges.</div>
+</div>
+</div>
+<script type="module">
+import { MALE_FRONT } from 'https://esm.sh/@musclemap/assets@1.0.1?bundle';
+const W=1024,H=1536,CX=MALE_FRONT.centerX,NS='http://www.w3.org/2000/svg';
+const canvas=document.getElementById('body'),ctx=canvas.getContext('2d',{alpha:true});
+const mapLines=document.getElementById('mapLines'),mapSvg=document.getElementById('mapSvg'),status=document.getElementById('status'),readout=document.getElementById('readout');
+const BASE={dx:-1,dy:2,s:1,sx:.845,sy:1};let img=null,fitOn=true,mapOn=true,goldOn=false;const meshes=new Map(),geom=new Map();
+const mirrorSvg=()=>`translate(${2*CX} 0) scale(-1 1)`;
+function addPath(parent,d,cls,transform=''){const p=document.createElementNS(NS,'path');p.setAttribute('d',d);p.setAttribute('class',cls);if(transform)p.setAttribute('transform',transform);parent.appendChild(p)}
+for(const o of MALE_FRONT.outline){addPath(mapLines,o.d,'outline-line');if(o.side==='LEFT')addPath(mapLines,o.d,'outline-line',mirrorSvg())}
+for(const m of MALE_FRONT.muscles){addPath(mapLines,m.d,'map-line');if(m.side==='LEFT')addPath(mapLines,m.d,'map-line',mirrorSvg())}
+function key(m,mirrored){return `${m.id||m.group}:${mirrored?'R':'N'}`}
+function label(m){return (String(m.group||'')+' '+String(m.id||'')).toUpperCase()}
+function isTarget(m){const s=label(m);return s.includes('CHEST')||s.includes('SHOULDER')||s.includes('DELTOID')||s.includes('ABS')||s.includes('RECTUS')||s.includes('QUAD')}
+function guardFor(m){const s=label(m);if(s.includes('CHEST'))return{x:.075,y:.10,blend:.82};if(s.includes('SHOULDER')||s.includes('DELTOID'))return{x:.08,y:.08,blend:.76};if(s.includes('ABS')||s.includes('RECTUS'))return{x:.09,y:.055,blend:.78};if(s.includes('QUAD'))return{x:.08,y:.06,blend:.80};return{x:.05,y:.05,blend:.75}}
+function baseRect(){const w=W*BASE.s*BASE.sx,h=H*BASE.s*BASE.sy;return{x:(W-w)/2+BASE.dx,y:(H-h)/2+BASE.dy,w,h}}
+function drawBaseSource(alpha=1){const r=baseRect();ctx.globalAlpha=alpha;ctx.drawImage(img,r.x,r.y,r.w,r.h);ctx.globalAlpha=1}
+function makeBBox(m,mirrored){const svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.style.cssText='position:absolute;width:0;height:0;overflow:hidden;opacity:0';const p=document.createElementNS(NS,'path');p.setAttribute('d',m.d);svg.appendChild(p);document.body.appendChild(svg);const b=p.getBBox();svg.remove();return mirrored?{x:2*CX-(b.x+b.width),y:b.y,width:b.width,height:b.height}:{x:b.x,y:b.y,width:b.width,height:b.height}}
+function inside(m,mirrored,x,y){const p=geom.get(key(m,mirrored)).path;return ctx.isPointInPath(p,mirrored?2*CX-x:x,y)}
+function spanAtY(m,mirrored,b,y){const samples=Math.max(50,Math.min(130,Math.round(b.width/2.5)));let left=null,right=null;for(let i=0;i<=samples;i++){const x=b.x+b.width*(i/samples);if(inside(m,mirrored,x,y)){if(left===null)left=x;right=x}}return left===null?null:{left,right}}
+function nearestSpan(m,mirrored,b,y){let s=spanAtY(m,mirrored,b,y);if(s)return{...s,y};for(let d=1;d<=Math.max(6,Math.round(b.height*.06));d++){for(const yy of [y-d,y+d]){if(yy<b.y||yy>b.y+b.height)continue;s=spanAtY(m,mirrored,b,yy);if(s)return{...s,y:yy}}}return{left:b.x,right:b.x+b.width,y}}
+function sourceRectFor(m,b){const br=baseRect(),iw=img.naturalWidth,ih=img.naturalHeight,g=guardFor(m);let x=(b.x-br.x)/br.w*iw,y=(b.y-br.y)/br.h*ih,w=b.width/br.w*iw,h=b.height/br.h*ih;const ix=w*g.x,iy=h*g.y;x+=ix;y+=iy;w-=2*ix;h-=2*iy;x=Math.max(0,x);y=Math.max(0,y);w=Math.max(8,Math.min(iw-x,w));h=Math.max(8,Math.min(ih-y,h));return{x,y,w,h}}
+function buildMesh(m,mirrored){const b=makeBBox(m,mirrored),p=new Path2D(m.d);geom.set(key(m,mirrored),{path:p,b});const area=b.width*b.height,cols=area>26000?6:5,rows=area>30000?7:5,src=sourceRectFor(m,b),srcPts=[],dstPts=[];for(let r=0;r<=rows;r++){const v=r/rows,yy=b.y+b.height*v,sp=nearestSpan(m,mirrored,b,yy);for(let c=0;c<=cols;c++){const u=c/cols;srcPts.push({x:src.x+src.w*u,y:src.y+src.h*v});dstPts.push({x:sp.left+(sp.right-sp.left)*u,y:sp.y})}}const tris=[],idx=(c,r)=>r*(cols+1)+c;for(let r=0;r<rows;r++)for(let c=0;c<cols;c++){const a=idx(c,r),bb=idx(c+1,r),cc=idx(c,r+1),d=idx(c+1,r+1);tris.push([a,bb,cc],[bb,d,cc])}return{p,srcPts,dstPts,tris,mirrored,blend:guardFor(m).blend}}
+function matrixFor(s0,s1,s2,d0,d1,d2){const den=s0.x*(s1.y-s2.y)+s1.x*(s2.y-s0.y)+s2.x*(s0.y-s1.y);if(Math.abs(den)<1e-6)return null;return{a:(d0.x*(s1.y-s2.y)+d1.x*(s2.y-s0.y)+d2.x*(s0.y-s1.y))/den,b:(d0.y*(s1.y-s2.y)+d1.y*(s2.y-s0.y)+d2.y*(s0.y-s1.y))/den,c:(d0.x*(s2.x-s1.x)+d1.x*(s0.x-s2.x)+d2.x*(s1.x-s0.x))/den,d:(d0.y*(s2.x-s1.x)+d1.y*(s0.x-s2.x)+d2.y*(s1.x-s0.x))/den,e:(d0.x*(s1.x*s2.y-s2.x*s1.y)+d1.x*(s2.x*s0.y-s0.x*s2.y)+d2.x*(s0.x*s1.y-s1.x*s0.y))/den,f:(d0.y*(s1.x*s2.y-s2.x*s1.y)+d1.y*(s2.x*s0.y-s0.x*s2.y)+d2.y*(s0.x*s1.y-s1.x*s0.y))/den}}
+function drawTri(mesh,t){const [i0,i1,i2]=t,s0=mesh.srcPts[i0],s1=mesh.srcPts[i1],s2=mesh.srcPts[i2],d0=mesh.dstPts[i0],d1=mesh.dstPts[i1],d2=mesh.dstPts[i2],M=matrixFor(s0,s1,s2,d0,d1,d2);if(!M)return;ctx.save();const clip=new Path2D();clip.moveTo(d0.x,d0.y);clip.lineTo(d1.x,d1.y);clip.lineTo(d2.x,d2.y);clip.closePath();ctx.clip(clip);ctx.setTransform(M.a,M.b,M.c,M.d,M.e,M.f);ctx.globalAlpha=mesh.blend;ctx.drawImage(img,0,0);ctx.restore()}
+function drawRigid(m,mirrored,alpha=1){ctx.save();if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}ctx.clip(new Path2D(m.d));ctx.globalAlpha=alpha;if(mirrored){ctx.scale(-1,1);ctx.translate(-2*CX,0)}drawBaseSource(alpha);ctx.restore()}
+function drawWarped(m,mirrored,mesh){drawRigid(m,mirrored,.42);ctx.save();if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}ctx.clip(mesh.p);if(mirrored){ctx.scale(-1,1);ctx.translate(-2*CX,0)}for(const t of mesh.tris)drawTri(mesh,t);ctx.restore()}
+function drawOutline(o,mirrored){ctx.save();if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}ctx.clip(new Path2D(o.d));ctx.globalAlpha=.78;if(mirrored){ctx.scale(-1,1);ctx.translate(-2*CX,0)}drawBaseSource(.78);ctx.restore()}
+function gold(m,mirrored){ctx.save();if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}ctx.clip(new Path2D(m.d));ctx.globalCompositeOperation='color';ctx.fillStyle='rgb(215,183,93)';ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='screen';const g=ctx.createRadialGradient(W*.5,H*.27,15,W*.5,H*.36,260);g.addColorStop(0,'rgba(255,235,160,.24)');g.addColorStop(1,'rgba(255,220,110,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.restore()}
+async function buildAll(){let count=0;for(const m of MALE_FRONT.muscles){if(!isTarget(m))continue;meshes.set(key(m,false),buildMesh(m,false));count++;if(m.side==='LEFT'){meshes.set(key(m,true),buildMesh(m,true));count++}if(count%4===0){status.textContent=`Building guarded meshes ${count}…`;await new Promise(r=>requestAnimationFrame(r))}}readout.textContent=`Guarded local meshes: ${count}\nWarped groups: chest / delts / abs / quads\nOther muscles: rigid clean fill\nOuter body: locked`}
+function render(){if(!img)return;ctx.setTransform(1,0,0,1,0,0);ctx.clearRect(0,0,W,H);const bg=ctx.createRadialGradient(W*.5,H*.36,60,W*.5,H*.5,820);bg.addColorStop(0,'#33363a');bg.addColorStop(.52,'#181b1f');bg.addColorStop(1,'#07090c');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(const o of MALE_FRONT.outline){drawOutline(o,false);if(o.side==='LEFT')drawOutline(o,true)}for(const m of MALE_FRONT.muscles){const use=fitOn&&isTarget(m);use?drawWarped(m,false,meshes.get(key(m,false))):drawRigid(m,false);if(m.side==='LEFT'){use?drawWarped(m,true,meshes.get(key(m,true))):drawRigid(m,true)}}if(goldOn)for(const m of MALE_FRONT.muscles){if(label(m).includes('CHEST')){gold(m,false);if(m.side==='LEFT')gold(m,true)}}}
+document.getElementById('fitBtn').onclick=()=>{fitOn=!fitOn;const b=document.getElementById('fitBtn');b.classList.toggle('active',fitOn);b.textContent=`Local fit ${fitOn?'ON':'OFF'}`;render()};document.getElementById('mapBtn').onclick=()=>{mapOn=!mapOn;mapSvg.style.display=mapOn?'block':'none';const b=document.getElementById('mapBtn');b.classList.toggle('active',mapOn);b.textContent=`Map ${mapOn?'ON':'OFF'}`};document.getElementById('goldBtn').onclick=()=>{goldOn=!goldOn;const b=document.getElementById('goldBtn');b.classList.toggle('active',goldOn);b.textContent=`Gold ${goldOn?'ON':'OFF'}`;render()};
+img=new Image();img.onload=async()=>{await buildAll();render();status.textContent='Guarded local fit ready ✓';status.classList.add('ok');setTimeout(()=>status.style.display='none',1300)};img.onerror=()=>{status.textContent='Detailed source failed to load';status.classList.add('err')};img.src='assets/anatomy-detail-front-fit-256.webp?v=8';
+</script>
+</body></html>
