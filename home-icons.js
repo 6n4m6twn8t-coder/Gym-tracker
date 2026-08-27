@@ -1,10 +1,10 @@
 const HOME_ICONS={
-  Push:`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M9 29c4-1 7-4 9-8l3-7 5 2-2 6c4-1 8 0 11 3 3 2 5 6 5 10H27c-6 0-11-1-15-4l-3-2Z"/><path d="M19 21c-2 5-5 8-10 10M27 35c-3-3-4-7-3-13"/></svg>`,
-  Pull:`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M12 10h24M16 10v8M32 10v8M14 18l5 3M34 18l-5 3"/><path d="M19 21v6c0 5 2 9 5 12 3-3 5-7 5-12v-6M14 39h20"/><circle cx="24" cy="18" r="4"/></svg>`,
-  Legs:`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M18 9c0 8-1 14-3 20l-2 10M30 9c0 8 1 14 3 20l2 10"/><path d="M18 9h12M17 24c3 2 5 5 7 10 2-5 4-8 7-10M13 39h8M27 39h8"/></svg>`,
-  'Upper / Chest':`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M16 10c2 3 5 5 8 5s6-2 8-5l6 5-4 7v16H14V22l-4-7 6-5Z"/><path d="M18 18c2 2 4 3 6 3s4-1 6-3M24 21v13M17 28h14"/></svg>`,
-  calendar:`<svg viewBox="0 0 48 48" aria-hidden="true"><rect x="8" y="11" width="32" height="29" rx="5"/><path d="M15 7v8M33 7v8M8 19h32M15 25h5M24 25h5M15 32h5M24 32h5"/></svg>`,
-  week:`<svg viewBox="0 0 48 48" aria-hidden="true"><path d="M27 6c2 7-1 11-4 14-3 3-5 5-4 9 1 3 3 5 6 6-1-4 1-7 4-10 1 4 5 6 5 11 0 5-4 8-10 8-8 0-13-5-13-12 0-7 5-12 10-17 0 5 2 8 6 10 0-6 1-11 0-19Z"/></svg>`
+  Push:`<svg viewBox="0 0 48 48" aria-hidden="true" style="stroke-width:1.75"><path d="M9 12h6M33 12h6M15 8v8M33 8v8M15 12h18"/><path d="M24 32V18M20 22l4-4 4 4"/><path d="M14 36h20M18 36v4M30 36v4"/></svg>`,
+  Pull:`<svg viewBox="0 0 48 48" aria-hidden="true" style="stroke-width:1.75"><path d="M11 10h26M14 10l5 5M34 10l-5 5"/><path d="M24 15v14M20 25l4 4 4-4"/><circle cx="24" cy="34" r="3.5"/><path d="M17 41c2-3 4-4 7-4s5 1 7 4"/></svg>`,
+  Legs:`<svg viewBox="0 0 48 48" aria-hidden="true" style="stroke-width:1.75"><path d="M18 8c0 7-1 12-3 17l-2 7 6 8M30 8c0 7 1 12 3 17l2 7-6 8"/><path d="M18 8h12M16 24c2 1 5 3 8 7 3-4 6-6 8-7M13 32h8M27 32h8"/></svg>`,
+  'Upper / Chest':`<svg viewBox="0 0 48 48" aria-hidden="true" style="stroke-width:1.75"><path d="M16 10c2 3 5 5 8 5s6-2 8-5l5 5-3 7v16H14V22l-3-7 5-5Z"/><path d="M17 21c2-2 4-3 7-3s5 1 7 3M24 18v15M18 29c2 2 4 3 6 3s4-1 6-3"/></svg>`,
+  calendar:`<svg viewBox="0 0 48 48" aria-hidden="true" style="stroke-width:1.75"><rect x="9" y="12" width="30" height="27" rx="5"/><path d="M16 8v8M32 8v8M9 20h30"/><path d="M16 27h4M24 27h4M16 33h4M24 33h4"/></svg>`,
+  week:`<svg viewBox="0 0 48 48" aria-hidden="true" style="stroke-width:1.75"><path d="M25 7c2 6 0 10-3 13-3 3-5 6-4 10 1 4 4 7 8 8-1-4 1-7 4-10 0 4 4 6 4 10 0 4-4 7-10 7-8 0-13-5-13-12 0-6 4-11 9-16 0 5 2 8 5 10 1-5 1-10 0-20Z"/></svg>`
 };
 
 function homeIcon(name){
