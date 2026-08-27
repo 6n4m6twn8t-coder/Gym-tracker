@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Athlete — Exact Path Fill Test</title>
+<style>
+:root{color-scheme:dark;--bg:#07090c;--panel:#11151b;--line:#292f38;--text:#f2efe8;--muted:#9aa1aa;--gold:#d7b75d;--cyan:#25e6ff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:calc(12px + env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom))}.wrap{max-width:540px;margin:auto}h1{font-size:21px;margin:0 0 5px}.sub{font-size:12px;line-height:1.45;color:var(--muted);margin:0 0 10px}.stage{position:relative;width:100%;aspect-ratio:2/3;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#11151a}.stage>*{position:absolute;inset:0;width:100%;height:100%}canvas{display:block}.map{z-index:3;pointer-events:none}.map-line{fill:none;stroke:var(--cyan);stroke-width:1.35;stroke-opacity:.64;vector-effect:non-scaling-stroke}.outline-line{fill:none;stroke:var(--cyan);stroke-width:2.1;stroke-opacity:.92;vector-effect:non-scaling-stroke}.panel{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}.grid{display:grid;grid-template-columns:1fr 1fr;gap:8px}.control{margin-top:10px}.control:first-child{margin-top:0}label{display:flex;justify-content:space-between;gap:8px;font-size:12px;color:#bcc2c9;margin-bottom:5px}.value{color:var(--gold);font-variant-numeric:tabular-nums}input[type=range]{width:100%;accent-color:var(--gold)}button{border:1px solid #3a414c;background:#181d24;color:var(--text);border-radius:11px;padding:10px;font-weight:700}button.active{border-color:#7d6933;background:#211c10;color:#ead17a}.readout{margin-top:10px;padding:9px 10px;border-radius:10px;background:#0b0e12;border:1px solid #222831;font:12px ui-monospace,SFMono-Regular,Menlo,monospace;color:#c8cdd3;word-break:break-word}.note{font-size:11px;color:#7f8790;line-height:1.45;margin-top:8px}.status{position:absolute;z-index:5;left:12px;top:12px;padding:7px 9px;border-radius:9px;background:rgba(7,9,12,.82);font-size:11px;color:#d8dde3}.status.ok{color:#a9e7b0}.status.err{color:#ff9c9c}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Exact SVG path fill</h1>
+<p class="sub">The detailed render is no longer the body shape. Every visible muscle is clipped into the exact MuscleMap path. The cyan map is only a reference overlay.</p>
+<div class="stage">
+  <canvas id="body" width="1024" height="1536"></canvas>
+  <svg id="mapSvg" class="map" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid meet"><g id="mapLines"></g></svg>
+  <div id="status" class="status">Loading path-fill body…</div>
+</div>
+<div class="panel">
+  <div class="grid"><button id="mapBtn" class="active">Map ON</button><button id="goldBtn" class="active">Gold ON</button></div>
+  <div class="control"><label><span>Source X</span><span id="xv" class="value">-1 px</span></label><input id="x" type="range" min="-100" max="100" step="1" value="-1"></div>
+  <div class="control"><label><span>Source Y</span><span id="yv" class="value">2 px</span></label><input id="y" type="range" min="-100" max="100" step="1" value="2"></div>
+  <div class="control"><label><span>Overall scale</span><span id="sv" class="value">1.000</span></label><input id="scale" type="range" min="0.800" max="1.200" step="0.001" value="1"></div>
+  <div class="control"><label><span>Source width</span><span id="wv" class="value">0.845</span></label><input id="width" type="range" min="0.700" max="1.150" step="0.001" value="0.845"></div>
+  <div class="control"><label><span>Source height</span><span id="hv" class="value">1.000</span></label><input id="height" type="range" min="0.800" max="1.200" step="0.001" value="1"></div>
+  <div class="control"><label><span>Map opacity</span><span id="mv" class="value">64%</span></label><input id="mapOpacity" type="range" min="0" max="100" step="1" value="64"></div>
+  <div class="grid" style="margin-top:10px"><button id="resetBtn">Reset</button><button id="copyBtn">Copy values</button></div>
+  <div id="readout" class="readout">x:-1 y:2 scale:1.000 width:0.845 height:1.000</div>
+  <div class="note">The clip shapes never move. These sliders only move the source anatomy texture underneath the exact SVG masks.</div>
+</div>
+</div>
+<script type="module">
+import { MALE_FRONT } from 'https://esm.sh/@musclemap/assets@1.0.1?bundle';
+const W=1024,H=1536,CX=MALE_FRONT.centerX,NS='http://www.w3.org/2000/svg';
+const canvas=document.getElementById('body'),ctx=canvas.getContext('2d',{alpha:true});
+const mapLines=document.getElementById('mapLines'),status=document.getElementById('status');
+const el=id=>document.getElementById(id), x=el('x'),y=el('y'),scale=el('scale'),width=el('width'),height=el('height'),mapOpacity=el('mapOpacity');
+let img=null,goldOn=true,mapOn=true;
+const mirrorSvg=()=>`translate(${2*CX} 0) scale(-1 1)`;
+function addPath(parent,d,cls,transform=''){const p=document.createElementNS(NS,'path');p.setAttribute('d',d);p.setAttribute('class',cls);if(transform)p.setAttribute('transform',transform);parent.appendChild(p)}
+for(const o of MALE_FRONT.outline){addPath(mapLines,o.d,'outline-line');if(o.side==='LEFT')addPath(mapLines,o.d,'outline-line',mirrorSvg())}
+for(const m of MALE_FRONT.muscles){addPath(mapLines,m.d,'map-line');if(m.side==='LEFT')addPath(mapLines,m.d,'map-line',mirrorSvg())}
+function sourceTransform(){return {dx:+x.value,dy:+y.value,s:+scale.value,sx:+width.value,sy:+height.value}}
+function drawSource(t){
+  const dw=W*t.s*t.sx, dh=H*t.s*t.sy;
+  const px=(W-dw)/2+t.dx, py=(H-dh)/2+t.dy;
+  ctx.drawImage(img,px,py,dw,dh);
+}
+function clippedDrawPath(d,mirrored,t,alpha=1){
+  ctx.save();
+  if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}
+  const p=new Path2D(d);ctx.clip(p);ctx.globalAlpha=alpha;
+  if(mirrored){ctx.scale(-1,1);ctx.translate(-2*CX,0)}
+  drawSource(t);ctx.restore();
+}
+function clippedGold(d,mirrored){
+  ctx.save();
+  if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}
+  const p=new Path2D(d);ctx.clip(p);
+  ctx.globalCompositeOperation='color';ctx.fillStyle='rgb(215,183,93)';ctx.fillRect(0,0,W,H);
+  ctx.globalCompositeOperation='screen';const g=ctx.createRadialGradient(W*.5,H*.27,20,W*.5,H*.36,270);g.addColorStop(0,'rgba(255,233,154,.23)');g.addColorStop(1,'rgba(255,220,110,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.restore();
+}
+function render(){
+  if(!img)return;
+  const t=sourceTransform();ctx.clearRect(0,0,W,H);
+  const bg=ctx.createRadialGradient(W*.5,H*.36,60,W*.5,H*.5,820);bg.addColorStop(0,'#33363a');bg.addColorStop(.52,'#181b1f');bg.addColorStop(1,'#07090c');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);
+  // Body outline base for head, hands, feet and connective gaps.
+  for(const o of MALE_FRONT.outline){clippedDrawPath(o.d,false,t,.78);if(o.side==='LEFT')clippedDrawPath(o.d,true,t,.78)}
+  // Exact muscle regions become the visible body geometry.
+  for(const m of MALE_FRONT.muscles){clippedDrawPath(m.d,false,t,1);if(m.side==='LEFT')clippedDrawPath(m.d,true,t,1)}
+  if(goldOn){for(const m of MALE_FRONT.muscles){if(m.group==='CHEST'||String(m.id||'').startsWith('CHEST_')){clippedGold(m.d,false);if(m.side==='LEFT')clippedGold(m.d,true)}}}
+  el('xv').textContent=`${t.dx} px`;el('yv').textContent=`${t.dy} px`;el('sv').textContent=t.s.toFixed(3);el('wv').textContent=t.sx.toFixed(3);el('hv').textContent=t.sy.toFixed(3);el('mv').textContent=`${mapOpacity.value}%`;el('readout').textContent=`x:${t.dx} y:${t.dy} scale:${t.s.toFixed(3)} width:${t.sx.toFixed(3)} height:${t.sy.toFixed(3)}`;
+}
+[x,y,scale,width,height].forEach(n=>n.addEventListener('input',render));
+mapOpacity.addEventListener('input',()=>{mapLines.style.opacity=+mapOpacity.value/100;el('mv').textContent=`${mapOpacity.value}%`});
+el('mapBtn').onclick=()=>{mapOn=!mapOn;el('mapSvg').style.display=mapOn?'block':'none';el('mapBtn').classList.toggle('active',mapOn);el('mapBtn').textContent=`Map ${mapOn?'ON':'OFF'}`};
+el('goldBtn').onclick=()=>{goldOn=!goldOn;el('goldBtn').classList.toggle('active',goldOn);el('goldBtn').textContent=`Gold ${goldOn?'ON':'OFF'}`;render()};
+el('resetBtn').onclick=()=>{x.value=-1;y.value=2;scale.value=1;width.value=.845;height.value=1;mapOpacity.value=64;mapLines.style.opacity=.64;render()};
+el('copyBtn').onclick=async()=>{try{await navigator.clipboard.writeText(el('readout').textContent);el('copyBtn').textContent='Copied ✓'}catch{el('copyBtn').textContent='Screenshot values'}};
+img=new Image();img.onload=()=>{status.textContent='Exact path fill loaded ✓';status.classList.add('ok');render();setTimeout(()=>status.style.display='none',1200)};img.onerror=()=>{status.textContent='Detailed source failed to load';status.classList.add('err')};img.src='assets/anatomy-detail-front-fit-256.webp?v=5';
+mapLines.style.opacity=.64;
+</script>
+</body></html>
