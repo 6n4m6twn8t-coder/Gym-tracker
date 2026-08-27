@@ -5,20 +5,14 @@ const HOME_ART={
   'Upper / Chest':window.HOME_ART_UPPER_CHEST
 };
 
+const HOME_STAT_ART={
+  calendar:'assets/stat-calendar-solid.webp?v=25',
+  week:'assets/stat-progress-solid.webp?v=25'
+};
+
 const HOME_UI_ICONS={
-  calendar:`<svg viewBox="0 0 48 48" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round">
-    <rect x="7.5" y="10.5" width="29" height="28" rx="4.5"/>
-    <path d="M14 7v7M30 7v7M7.5 18h29"/>
-    <path d="M13 24h5M22 24h4M13 30h5M22 30h3" style="stroke-opacity:.7"/>
-    <circle cx="35" cy="34" r="7"/>
-    <path d="m31.8 34 2.2 2.2 4.5-4.8"/>
-  </svg>`,
-  week:`<svg viewBox="0 0 48 48" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round">
-    <circle cx="24" cy="24" r="17"/>
-    <path d="M14 33h4v-7h-4zM22 33h4V21h-4zM30 33h4V16h-4z"/>
-    <path d="M13.5 24.5c5-1.6 9.2-4.1 12.8-7.6 2.2-2.1 4.2-4.7 6.2-7.4"/>
-    <path d="m28.5 10 4.6-.8-.5 4.6"/>
-  </svg>`
+  calendar:`<svg viewBox="0 0 48 48" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round"><rect x="7.5" y="10.5" width="29" height="28" rx="4.5"/><path d="M14 7v7M30 7v7M7.5 18h29"/><path d="M13 24h5M22 24h4M13 30h5M22 30h3" style="stroke-opacity:.7"/><circle cx="35" cy="34" r="7"/><path d="m31.8 34 2.2 2.2 4.5-4.8"/></svg>`,
+  week:`<svg viewBox="0 0 48 48" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round"><circle cx="24" cy="24" r="17"/><path d="M14 33h4v-7h-4zM22 33h4V21h-4zM30 33h4V16h-4z"/><path d="M13.5 24.5c5-1.6 9.2-4.1 12.8-7.6 2.2-2.1 4.2-4.7 6.2-7.4"/><path d="m28.5 10 4.6-.8-.5 4.6"/></svg>`
 };
 
 function homeIcon(name){
@@ -26,6 +20,12 @@ function homeIcon(name){
   if(workoutArt){
     return `<span class="homeIcon homeArtIcon" aria-hidden="true"><img src="${workoutArt}" alt="" draggable="false"></span>`;
   }
+
+  const statArt=HOME_STAT_ART[name];
+  if(statArt){
+    return `<span class="homeIcon homeStatArtIcon" aria-hidden="true"><img src="${statArt}" alt="" draggable="false"></span>`;
+  }
+
   return `<span class="homeIcon" aria-hidden="true">${HOME_UI_ICONS[name]||''}</span>`;
 }
 
