@@ -1,0 +1,10 @@
+import { MALE_FRONT } from 'https://esm.sh/@musclemap/assets@1.0.1?bundle';
+const NS='http://www.w3.org/2000/svg',muscles=document.getElementById('muscles'),defs=document.getElementById('defs'),toggle=document.getElementById('toggle');let chestOn=true,n=0;
+const E=(tag,a={})=>{const x=document.createElementNS(NS,tag);for(const[k,v]of Object.entries(a))x.setAttribute(k,v);return x};
+const mirror=()=>`translate(${2*MALE_FRONT.centerX} 0) scale(-1 1)`;
+const isChest=m=>m.group==='CHEST'||String(m.id||'').startsWith('CHEST_');
+function key(m,mir){const g=String(m.group||'');if(g==='CHEST'||g.includes('SHOULDER')||g==='TRAPEZIUS')return mir?'d2':'d1';if(g==='LATS'||g==='SERRATUS'||g==='OBLIQUES')return mir?'d1':'d2';if(g==='ABS')return'h';return'v'}
+function add(m,mir=false){const id='c'+(++n),clip=E('clipPath',{id}),cp=E('path',{d:m.d});if(mir)cp.setAttribute('transform',mirror());clip.appendChild(cp);defs.appendChild(clip);const g=E('g',{'clip-path':`url(#${id})`,'data-chest':isChest(m)?'1':'0'}),tr=mir?mirror():null,k=key(m,mir),A=o=>tr?{d:m.d,transform:tr,...o}:{d:m.d,...o};g.append(E('path',A({class:'base'})),E('path',A({class:'noise'})),E('path',A({class:'light'})),E('path',A({fill:`url(#f${k})`,class:'fib'})),E('path',A({fill:`url(#fd${k})`,class:'fibd'})),E('path',A({class:'edge'})),E('path',A({class:`gold${isChest(m)&&chestOn?' on':''}`})));muscles.appendChild(g)}
+for(const m of MALE_FRONT.muscles){add(m);if(m.side==='LEFT')add(m,true)}
+function setChest(){for(const g of muscles.querySelectorAll('[data-chest="1"]'))g.lastElementChild.classList.toggle('on',chestOn);toggle.textContent=chestOn?'Chest highlight ON':'Chest highlight OFF';toggle.classList.toggle('active',chestOn)}
+toggle.addEventListener('click',()=>{chestOn=!chestOn;setChest()});
