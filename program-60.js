@@ -48,5 +48,93 @@ Object.assign(SIMILAR,{
   '45° Back Extension':['Romanian Deadlift','Dumbbell Romanian Deadlift','Good Morning']
 });
 
-// Re-render the session picker with the updated four-day rotation.
+const CALM_MESSAGES={
+  default:[
+    'One set at a time.',
+    'Stay controlled.',
+    'Keep moving forward.',
+    'Focus on this set.',
+    'No rush. Just work.',
+    'Do the work in front of you.',
+    'Small steps still count.'
+  ],
+  Push:[
+    'Control the rep. Let the chest work.',
+    'Smooth reps. Strong positions.',
+    'Stay patient through every rep.',
+    'Quality first. The load follows.'
+  ],
+  Pull:[
+    'Set the position. Then pull.',
+    'Stay controlled through the full range.',
+    'Smooth reps. No wasted movement.',
+    'Focus on the muscle doing the work.'
+  ],
+  Legs:[
+    'Breathe. Settle. Do the next set.',
+    'Strong position. Controlled reps.',
+    'No rush through the hard work.',
+    'One clean set at a time.'
+  ],
+  'Upper / Chest':[
+    'Stay patient. Make every rep count.',
+    'Chest first. Quality throughout.',
+    'Control the stretch. Own the rep.',
+    'Keep the work clean and steady.'
+  ]
+};
+
+const FINISH_MESSAGES=[
+  'Session complete.',
+  'Work done.',
+  'Another step forward.',
+  'Progress logged.',
+  'Good session. Keep going.'
+];
+
+function pickMessage(list){
+  return list[Math.floor(Math.random()*list.length)];
+}
+
+function sessionMessage(name){
+  const specific=CALM_MESSAGES[name]||[];
+  const pool=[...specific,...CALM_MESSAGES.default];
+  return pickMessage(pool);
+}
+
+function ensureSessionMessage(){
+  if(!active)return;
+  if(!active.motivation){
+    active.motivation=sessionMessage(active.name);
+    persist();
+  }
+}
+
+function showSessionMessage(){
+  if(!active?.motivation)return;
+  const bar=document.querySelector('.sessionBar');
+  if(!bar||document.querySelector('.calmCue'))return;
+  bar.insertAdjacentHTML('afterend',`<div class="calmCue">${escapeHtml(active.motivation)}</div>`);
+}
+
+function showFinishMessage(message){
+  if(!app||!message)return;
+  app.insertAdjacentHTML('afterbegin',`<div class="finishCue"><small>SESSION COMPLETE</small><strong>${escapeHtml(message)}</strong></div>`);
+}
+
+const trackerWorkout=workout;
+workout=function(){
+  ensureSessionMessage();
+  trackerWorkout();
+  showSessionMessage();
+};
+
+const trackerFinish=finish;
+finish=function(){
+  const message=pickMessage(FINISH_MESSAGES);
+  trackerFinish();
+  showFinishMessage(message);
+};
+
+// Re-render the session picker or current workout with the updated four-day rotation and calm cue layer.
 render();
