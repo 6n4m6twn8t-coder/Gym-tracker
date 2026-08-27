@@ -5,14 +5,20 @@ const HOME_ART={
   'Upper / Chest':window.HOME_ART_UPPER_CHEST
 };
 
-const HOME_STAT_ART={
-  calendar:'assets/stat-calendar.webp?v=23',
-  week:'assets/stat-progress.webp?v=23'
-};
-
 const HOME_UI_ICONS={
-  calendar:`<svg viewBox="0 0 48 48" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><rect x="9" y="12" width="30" height="27" rx="5"/><path d="M16 8v8M32 8v8M9 20h30"/><path d="M16 27h4M24 27h4M16 33h4M24 33h4"/></svg>`,
-  week:`<svg viewBox="0 0 48 48" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round"><path d="M25 7c2 6 0 10-3 13-3 3-5 6-4 10 1 4 4 7 8 8-1-4 1-7 4-10 0 4 4 6 4 10 0 4-4 7-10 7-8 0-13-5-13-12 0-6 4-11 9-16 0 5 2 8 5 10 1-5 1-10 0-20Z"/></svg>`
+  calendar:`<svg viewBox="0 0 48 48" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round">
+    <rect x="7.5" y="10.5" width="29" height="28" rx="4.5"/>
+    <path d="M14 7v7M30 7v7M7.5 18h29"/>
+    <path d="M13 24h5M22 24h4M13 30h5M22 30h3" style="stroke-opacity:.7"/>
+    <circle cx="35" cy="34" r="7"/>
+    <path d="m31.8 34 2.2 2.2 4.5-4.8"/>
+  </svg>`,
+  week:`<svg viewBox="0 0 48 48" aria-hidden="true" style="fill:none;stroke:currentColor;stroke-width:1.55;stroke-linecap:round;stroke-linejoin:round">
+    <circle cx="24" cy="24" r="17"/>
+    <path d="M14 33h4v-7h-4zM22 33h4V21h-4zM30 33h4V16h-4z"/>
+    <path d="M13.5 24.5c5-1.6 9.2-4.1 12.8-7.6 2.2-2.1 4.2-4.7 6.2-7.4"/>
+    <path d="m28.5 10 4.6-.8-.5 4.6"/>
+  </svg>`
 };
 
 function homeIcon(name){
@@ -20,12 +26,6 @@ function homeIcon(name){
   if(workoutArt){
     return `<span class="homeIcon homeArtIcon" aria-hidden="true"><img src="${workoutArt}" alt="" draggable="false"></span>`;
   }
-
-  const statArt=HOME_STAT_ART[name];
-  if(statArt){
-    return `<span class="homeIcon homeStatArtIcon" aria-hidden="true"><img src="${statArt}" alt="" draggable="false"></span>`;
-  }
-
   return `<span class="homeIcon" aria-hidden="true">${HOME_UI_ICONS[name]||''}</span>`;
 }
 
