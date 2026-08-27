@@ -3,96 +3,188 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover" />
-<title>Project Athlete — Real Layered Anatomy</title>
+<title>Project Athlete — Detailed Mapped Anatomy</title>
 <style>
 :root{--bg:#07090b;--panel:#101318;--line:#252a31;--text:#f3f1ea;--muted:#8e949d;--gold:#d7b75d}
-*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
+*{box-sizing:border-box}
+html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}
 body{min-height:100vh;padding:calc(16px + env(safe-area-inset-top)) 14px calc(24px + env(safe-area-inset-bottom))}
-.wrap{max-width:520px;margin:0 auto}.eyebrow{font-size:11px;letter-spacing:.18em;color:var(--gold);font-weight:800;margin-bottom:8px}
-h1{margin:0 0 6px;font-size:25px;line-height:1.05}.sub{margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.45}
+.wrap{max-width:520px;margin:0 auto}
+.eyebrow{font-size:11px;letter-spacing:.18em;color:var(--gold);font-weight:800;margin-bottom:8px}
+h1{margin:0 0 6px;font-size:25px;line-height:1.05}
+.sub{margin:0 0 14px;color:var(--muted);font-size:13px;line-height:1.45}
 .card{background:linear-gradient(180deg,#12151a,#0c0f13);border:1px solid var(--line);border-radius:22px;padding:10px;box-shadow:0 18px 48px rgba(0,0,0,.36)}
-.figure{width:100%;aspect-ratio:2/3;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 34%,#171b20 0,#0b0e12 50%,#050608 100%)}
-svg{display:block;width:100%;height:100%}.body-photo{filter:grayscale(1) brightness(.68) contrast(1.32)}
-.muscle-depth{fill:url(#graphiteShade);opacity:.22;mix-blend-mode:multiply}
-.muscle-fibre{opacity:.34;mix-blend-mode:screen;pointer-events:none}
-.muscle-rim{fill:none;stroke:#d7dde0;stroke-opacity:.07;stroke-width:1.2;vector-effect:non-scaling-stroke}
-.active-fill{fill:url(#goldFill);opacity:.72;filter:url(#goldGlow)}
-.active-fibre{opacity:.46;mix-blend-mode:screen;pointer-events:none}
-.controls{display:flex;gap:10px;margin-top:10px}.btn{flex:1;border:1px solid var(--line);background:#171b21;color:var(--text);padding:12px 13px;border-radius:14px;font-weight:750;font-size:14px}.btn.active{border-color:#6f5d2f;background:#1e1a11;color:#ead486}
-.note{margin:11px 3px 1px;color:var(--muted);font-size:12px;line-height:1.45}.badge{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:7px 9px;border-radius:999px;background:#0d1014;border:1px solid #252a31;color:#a5abb4;font-size:11px}.dot{width:7px;height:7px;border-radius:50%;background:#d7b75d;box-shadow:0 0 12px rgba(215,183,93,.45)}
+.figure{width:100%;aspect-ratio:2/3;border-radius:16px;overflow:hidden;background:radial-gradient(circle at 50% 34%,#20242a 0,#0f1216 48%,#07090b 100%)}
+svg{display:block;width:100%;height:100%}
+.body-photo{filter:grayscale(1) brightness(.72) contrast(1.42)}
+.body-shadow{fill:#000;opacity:.25;filter:url(#bodyShadow)}
+.muscle-tone{fill:url(#neutralTone);opacity:.18;mix-blend-mode:multiply;pointer-events:none}
+.muscle-highlight{fill:url(#neutralLight);opacity:.10;mix-blend-mode:screen;pointer-events:none}
+.muscle-fibre{opacity:.24;mix-blend-mode:screen;pointer-events:none}
+.muscle-fibre-dark{opacity:.18;mix-blend-mode:multiply;pointer-events:none}
+.active-gold{fill:url(#goldFill);opacity:0;filter:url(#goldGlow);pointer-events:none}
+.active-gold.on{opacity:.72}
+.active-gold-fibre{opacity:0;mix-blend-mode:screen;pointer-events:none}
+.active-gold-fibre.on{opacity:.42}
+.controls{display:flex;gap:10px;margin-top:10px}
+.btn{flex:1;border:1px solid var(--line);background:#171b21;color:var(--text);padding:12px 13px;border-radius:14px;font-weight:750;font-size:14px}
+.btn.active{border-color:#6f5d2f;background:#1e1a11;color:#ead486}
+.note{margin:11px 3px 1px;color:var(--muted);font-size:12px;line-height:1.45}
+.badge{display:inline-flex;align-items:center;gap:7px;margin-top:10px;padding:7px 9px;border-radius:999px;background:#0d1014;border:1px solid #252a31;color:#a5abb4;font-size:11px}
+.dot{width:7px;height:7px;border-radius:50%;background:#d7b75d;box-shadow:0 0 12px rgba(215,183,93,.45)}
 </style>
 </head>
 <body>
 <div class="wrap">
   <div class="eyebrow">PROJECT ATHLETE · REAL MAPPED BUILD</div>
-  <h1>Exact map. Detailed body.</h1>
-  <p class="sub">This is the actual mapped body system — not a render. The fixed MuscleMap body image sits underneath, and every texture/highlight layer is clipped to the exact original muscle paths.</p>
+  <h1>Detailed body on the exact map.</h1>
+  <p class="sub">This is the real implementation. The original mapped body stays fixed. Detail is drawn inside the exact MuscleMap muscle surfaces, and only the selected muscle receives gold.</p>
+
   <div class="card">
     <div class="figure">
       <svg id="body" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid meet" aria-label="Mapped detailed muscle anatomy">
-        <defs>
-          <linearGradient id="graphiteShade" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#f3f5f4"/>
-            <stop offset=".45" stop-color="#7e858a"/>
-            <stop offset="1" stop-color="#15191d"/>
+        <defs id="defs">
+          <linearGradient id="neutralTone" x1="0" y1="0" x2="1" y2="1">
+            <stop offset="0" stop-color="#d5d8d8"/>
+            <stop offset=".38" stop-color="#747b80"/>
+            <stop offset=".72" stop-color="#34393e"/>
+            <stop offset="1" stop-color="#121519"/>
           </linearGradient>
+          <radialGradient id="neutralLight" cx="34%" cy="24%" r="78%">
+            <stop offset="0" stop-color="#ffffff" stop-opacity=".68"/>
+            <stop offset=".42" stop-color="#aeb4b6" stop-opacity=".16"/>
+            <stop offset="1" stop-color="#000" stop-opacity="0"/>
+          </radialGradient>
           <linearGradient id="goldFill" x1="0" y1="0" x2="1" y2="1">
-            <stop offset="0" stop-color="#f3dc82"/>
-            <stop offset=".42" stop-color="#d7b75d"/>
-            <stop offset=".74" stop-color="#aa8432"/>
-            <stop offset="1" stop-color="#6e531d"/>
+            <stop offset="0" stop-color="#f5df87"/>
+            <stop offset=".38" stop-color="#d7b75d"/>
+            <stop offset=".72" stop-color="#aa8432"/>
+            <stop offset="1" stop-color="#6f531c"/>
           </linearGradient>
-          <pattern id="fibV" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(88)">
-            <path d="M-6 5 C1 1 8 1 15 5 S29 9 36 5" fill="none" stroke="#eef0ee" stroke-width=".85" opacity=".46"/>
-            <path d="M-6 12 C1 8 8 8 15 12 S29 16 36 12" fill="none" stroke="#0b0e10" stroke-width=".7" opacity=".55"/>
+
+          <pattern id="fibVLight" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(88)">
+            <path d="M-8 4 C0 0 8 0 16 4 S32 8 40 4" fill="none" stroke="#f1f3f1" stroke-width=".72" opacity=".48"/>
+            <path d="M-8 11 C0 7 8 7 16 11 S32 15 40 11" fill="none" stroke="#c7ccca" stroke-width=".42" opacity=".28"/>
           </pattern>
-          <pattern id="fibH" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(2)">
-            <path d="M-6 5 C1 1 8 1 15 5 S29 9 36 5" fill="none" stroke="#eef0ee" stroke-width=".85" opacity=".46"/>
-            <path d="M-6 12 C1 8 8 8 15 12 S29 16 36 12" fill="none" stroke="#0b0e10" stroke-width=".7" opacity=".55"/>
+          <pattern id="fibVDark" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(88)">
+            <path d="M-8 7 C0 3 8 3 16 7 S32 11 40 7" fill="none" stroke="#050709" stroke-width=".85" opacity=".52"/>
           </pattern>
-          <pattern id="fibD1" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(-24)">
-            <path d="M-6 5 C1 1 8 1 15 5 S29 9 36 5" fill="none" stroke="#eef0ee" stroke-width=".85" opacity=".46"/>
-            <path d="M-6 12 C1 8 8 8 15 12 S29 16 36 12" fill="none" stroke="#0b0e10" stroke-width=".7" opacity=".55"/>
+          <pattern id="fibHLight" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(2)">
+            <path d="M-8 4 C0 0 8 0 16 4 S32 8 40 4" fill="none" stroke="#f1f3f1" stroke-width=".72" opacity=".48"/>
+            <path d="M-8 11 C0 7 8 7 16 11 S32 15 40 11" fill="none" stroke="#c7ccca" stroke-width=".42" opacity=".28"/>
           </pattern>
-          <pattern id="fibD2" width="18" height="18" patternUnits="userSpaceOnUse" patternTransform="rotate(24)">
-            <path d="M-6 5 C1 1 8 1 15 5 S29 9 36 5" fill="none" stroke="#eef0ee" stroke-width=".85" opacity=".46"/>
-            <path d="M-6 12 C1 8 8 8 15 12 S29 16 36 12" fill="none" stroke="#0b0e10" stroke-width=".7" opacity=".55"/>
+          <pattern id="fibHDark" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(2)">
+            <path d="M-8 7 C0 3 8 3 16 7 S32 11 40 7" fill="none" stroke="#050709" stroke-width=".85" opacity=".52"/>
           </pattern>
-          <filter id="goldGlow" x="-25%" y="-25%" width="150%" height="150%">
-            <feDropShadow dx="0" dy="0" stdDeviation="5" flood-color="#d7b75d" flood-opacity=".28"/>
+          <pattern id="fibD1Light" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-24)">
+            <path d="M-8 4 C0 0 8 0 16 4 S32 8 40 4" fill="none" stroke="#f1f3f1" stroke-width=".72" opacity=".48"/>
+            <path d="M-8 11 C0 7 8 7 16 11 S32 15 40 11" fill="none" stroke="#c7ccca" stroke-width=".42" opacity=".28"/>
+          </pattern>
+          <pattern id="fibD1Dark" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(-24)">
+            <path d="M-8 7 C0 3 8 3 16 7 S32 11 40 7" fill="none" stroke="#050709" stroke-width=".85" opacity=".52"/>
+          </pattern>
+          <pattern id="fibD2Light" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(24)">
+            <path d="M-8 4 C0 0 8 0 16 4 S32 8 40 4" fill="none" stroke="#f1f3f1" stroke-width=".72" opacity=".48"/>
+            <path d="M-8 11 C0 7 8 7 16 11 S32 15 40 11" fill="none" stroke="#c7ccca" stroke-width=".42" opacity=".28"/>
+          </pattern>
+          <pattern id="fibD2Dark" width="16" height="16" patternUnits="userSpaceOnUse" patternTransform="rotate(24)">
+            <path d="M-8 7 C0 3 8 3 16 7 S32 11 40 7" fill="none" stroke="#050709" stroke-width=".85" opacity=".52"/>
+          </pattern>
+          <filter id="bodyShadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feGaussianBlur stdDeviation="10"/>
           </filter>
+          <filter id="goldGlow" x="-25%" y="-25%" width="150%" height="150%">
+            <feDropShadow dx="0" dy="0" stdDeviation="4.5" flood-color="#d7b75d" flood-opacity=".25"/>
+          </filter>
+          <clipPath id="bodyClip"></clipPath>
         </defs>
-        <image class="body-photo" href="https://unpkg.com/@musclemap/assets@1.0.1/bodies/male-front.webp" x="0" y="0" width="1024" height="1536" preserveAspectRatio="none"/>
+
+        <g id="bodyShadowGroup"></g>
+        <image class="body-photo" href="https://unpkg.com/@musclemap/assets@1.0.1/bodies/male-front.webp" x="0" y="0" width="1024" height="1536" preserveAspectRatio="none" clip-path="url(#bodyClip)"/>
         <g id="muscles"></g>
       </svg>
     </div>
+
     <div class="controls"><button id="toggle" class="btn active">Chest highlight ON</button></div>
     <div class="badge"><span class="dot"></span> Exact original muscle paths</div>
-    <div class="note">No replacement body is generated here. The body, muscle geometry and highlight coordinates all remain locked to the same 1024×1536 map.</div>
+    <div class="note">No generated replacement body is used. The white photo background is clipped away, the body remains locked to the original 1024×1536 geometry, and the added graphite fibre treatment cannot leave its mapped muscle region.</div>
   </div>
 </div>
+
 <script type="module">
 import { MALE_FRONT } from 'https://esm.sh/@musclemap/assets@1.0.1?bundle';
+
 const NS='http://www.w3.org/2000/svg';
 const musclesG=document.getElementById('muscles');
+const bodyClip=document.getElementById('bodyClip');
+const bodyShadowGroup=document.getElementById('bodyShadowGroup');
 const toggle=document.getElementById('toggle');
 let chestOn=true;
-function el(name,attrs={}){const n=document.createElementNS(NS,name);for(const[k,v]of Object.entries(attrs))n.setAttribute(k,String(v));return n}
+
+function el(name,attrs={}){
+  const n=document.createElementNS(NS,name);
+  for(const[k,v]of Object.entries(attrs)) n.setAttribute(k,String(v));
+  return n;
+}
 function mirrorTransform(cx){return `translate(${2*cx} 0) scale(-1 1)`}
 function isChest(m){return m.group==='CHEST'||String(m.id||'').startsWith('CHEST_')}
-function fibreFor(m,mirrored){const g=String(m.group||'');if(g==='CHEST')return mirrored?'fibD2':'fibD1';if(g.includes('SHOULDER')||g==='TRAPEZIUS')return mirrored?'fibD2':'fibD1';if(g==='LATS'||g==='SERRATUS'||g==='OBLIQUES')return mirrored?'fibD1':'fibD2';if(g==='ABS')return 'fibV';return 'fibV'}
-function addMuscle(m,mirrored=false){
-  const active=isChest(m);
-  const g=el('g',{'data-chest':active?'1':'0'}); if(mirrored)g.setAttribute('transform',mirrorTransform(MALE_FRONT.centerX));
-  const depth=el('path',{d:m.d,class:'muscle-depth'});
-  const fibres=el('path',{d:m.d,fill:`url(#${fibreFor(m,mirrored)})`,class:'muscle-fibre'});
-  const rim=el('path',{d:m.d,class:'muscle-rim'});
-  const gold=el('path',{d:m.d,class:'active-fill',opacity:active&&chestOn?'.72':'0'});
-  const goldFib=el('path',{d:m.d,fill:`url(#${fibreFor(m,mirrored)})`,class:'active-fibre',opacity:active&&chestOn?'.46':'0'});
-  g.append(depth,fibres,rim,gold,goldFib); musclesG.appendChild(g)
+function fibreKey(m,mirrored){
+  const g=String(m.group||'');
+  if(g==='CHEST') return mirrored?'D2':'D1';
+  if(g.includes('SHOULDER')||g==='TRAPEZIUS') return mirrored?'D2':'D1';
+  if(g==='LATS'||g==='SERRATUS'||g==='OBLIQUES') return mirrored?'D1':'D2';
+  if(g==='ABS') return 'V';
+  if(g==='QUADS'||g==='HAMSTRINGS'||g==='CALVES'||g==='BICEPS'||g==='TRICEPS'||g==='FOREARMS') return 'V';
+  return 'V';
 }
-for(const m of MALE_FRONT.muscles){addMuscle(m,false);if(m.side==='LEFT')addMuscle(m,true)}
-function setChest(){for(const g of musclesG.querySelectorAll('[data-chest="1"]')){g.children[3].setAttribute('opacity',chestOn?'.72':'0');g.children[4].setAttribute('opacity',chestOn?'.46':'0')}toggle.textContent=chestOn?'Chest highlight ON':'Chest highlight OFF';toggle.classList.toggle('active',chestOn)}
+
+// Build the exact silhouette clip and a soft body shadow from the original outline geometry.
+for(const o of MALE_FRONT.outline){
+  const p=el('path',{d:o.d});
+  bodyClip.appendChild(p);
+  const s=el('path',{d:o.d,class:'body-shadow'});
+  bodyShadowGroup.appendChild(s);
+  if(o.side==='LEFT'){
+    const pm=el('path',{d:o.d,transform:mirrorTransform(MALE_FRONT.centerX)});
+    bodyClip.appendChild(pm);
+    const sm=el('path',{d:o.d,class:'body-shadow',transform:mirrorTransform(MALE_FRONT.centerX)});
+    bodyShadowGroup.appendChild(sm);
+  }
+}
+
+function addMuscle(m,mirrored=false){
+  const chest=isChest(m);
+  const key=fibreKey(m,mirrored);
+  const g=el('g',{'data-chest':chest?'1':'0'});
+  if(mirrored) g.setAttribute('transform',mirrorTransform(MALE_FRONT.centerX));
+
+  // Neutral detail layers — intentionally no visible outline/stroke.
+  g.appendChild(el('path',{d:m.d,class:'muscle-tone'}));
+  g.appendChild(el('path',{d:m.d,class:'muscle-highlight'}));
+  g.appendChild(el('path',{d:m.d,fill:`url(#fib${key}Light)`,class:'muscle-fibre'}));
+  g.appendChild(el('path',{d:m.d,fill:`url(#fib${key}Dark)`,class:'muscle-fibre-dark'}));
+
+  // Active state uses the exact same d path.
+  const gold=el('path',{d:m.d,class:`active-gold${chest&&chestOn?' on':''}`});
+  const goldFib=el('path',{d:m.d,fill:`url(#fib${key}Light)`,class:`active-gold-fibre${chest&&chestOn?' on':''}`});
+  g.append(gold,goldFib);
+  musclesG.appendChild(g);
+}
+
+for(const m of MALE_FRONT.muscles){
+  addMuscle(m,false);
+  if(m.side==='LEFT') addMuscle(m,true);
+}
+
+function setChest(){
+  for(const g of musclesG.querySelectorAll('[data-chest="1"]')){
+    g.children[4].classList.toggle('on',chestOn);
+    g.children[5].classList.toggle('on',chestOn);
+  }
+  toggle.textContent=chestOn?'Chest highlight ON':'Chest highlight OFF';
+  toggle.classList.toggle('active',chestOn);
+}
+
 toggle.addEventListener('click',()=>{chestOn=!chestOn;setChest()});
 </script>
 </body>
