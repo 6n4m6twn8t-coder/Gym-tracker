@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Athlete — Auto Muscle Fit</title>
+<style>
+:root{color-scheme:dark;--bg:#07090c;--panel:#11151b;--line:#292f38;--text:#f2efe8;--muted:#9aa1aa;--gold:#d7b75d;--cyan:#25e6ff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:calc(12px + env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom))}.wrap{max-width:540px;margin:auto}h1{font-size:21px;margin:0 0 5px}.sub{font-size:12px;line-height:1.45;color:var(--muted);margin:0 0 10px}.stage{position:relative;width:100%;aspect-ratio:2/3;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#11151a}.stage>*{position:absolute;inset:0;width:100%;height:100%}canvas{display:block}.map{z-index:3;pointer-events:none}.map-line{fill:none;stroke:var(--cyan);stroke-width:1.3;stroke-opacity:.58;vector-effect:non-scaling-stroke}.outline-line{fill:none;stroke:var(--cyan);stroke-width:2;stroke-opacity:.88;vector-effect:non-scaling-stroke}.status{position:absolute;z-index:5;left:12px;top:12px;padding:8px 10px;border-radius:10px;background:rgba(7,9,12,.86);font-size:11px;color:#d8dde3}.status.ok{color:#a9e7b0}.status.err{color:#ff9c9c}.panel{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}button{border:1px solid #3a414c;background:#181d24;color:var(--text);border-radius:11px;padding:10px 7px;font-weight:700;font-size:13px}button.active{border-color:#7d6933;background:#211c10;color:#ead17a}.readout{margin-top:10px;padding:9px 10px;border-radius:10px;background:#0b0e12;border:1px solid #222831;font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:#c8cdd3;line-height:1.45}.note{font-size:11px;color:#7f8790;line-height:1.45;margin-top:8px}.pill{display:inline-block;margin:8px 5px 0 0;padding:5px 8px;border:1px solid #303641;border-radius:999px;color:#aeb5bd;font-size:10px}.pill.on{border-color:#6c5b2d;color:#e3c970;background:#1d190e}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Automatic muscle fit</h1>
+<p class="sub">The outer body stays locked. Chest, delts, abs and quads are fitted independently by matching the source render's strongest local anatomy edges to each exact MuscleMap container.</p>
+<div class="stage">
+  <canvas id="body" width="1024" height="1536"></canvas>
+  <svg id="mapSvg" class="map" viewBox="0 0 1024 1536" preserveAspectRatio="xMidYMid meet"><g id="mapLines"></g></svg>
+  <div id="status" class="status">Loading detailed source…</div>
+</div>
+<div class="panel">
+  <div class="grid">
+    <button id="fitBtn" class="active">Auto fit ON</button>
+    <button id="mapBtn" class="active">Map ON</button>
+    <button id="goldBtn" class="active">Gold ON</button>
+  </div>
+  <div id="groups"><span class="pill on">CHEST</span><span class="pill on">DELTS</span><span class="pill on">ABS</span><span class="pill on">QUADS</span></div>
+  <div id="readout" class="readout">Waiting for automatic fit…</div>
+  <div class="note">No muscle-position sliders in this test. The same algorithm calculates a local translation and X/Y scale for every selected muscle path. Toggle <b>Auto fit</b> to compare it against the previous single-body fill.</div>
+</div>
+</div>
+<script type="module">
+import { MALE_FRONT } from 'https://esm.sh/@musclemap/assets@1.0.1?bundle';
+const W=1024,H=1536,CX=MALE_FRONT.centerX,NS='http://www.w3.org/2000/svg';
+const canvas=document.getElementById('body'),ctx=canvas.getContext('2d',{alpha:true});
+const mapLines=document.getElementById('mapLines'),status=document.getElementById('status'),readout=document.getElementById('readout');
+const mapSvg=document.getElementById('mapSvg');
+let img=null,goldOn=true,mapOn=true,autoOn=true;
+const BASE={dx:-1,dy:2,s:1,sx:.845,sy:1};
+const fits=new Map();
+const mirrorSvg=()=>`translate(${2*CX} 0) scale(-1 1)`;
+function addPath(parent,d,cls,transform=''){const p=document.createElementNS(NS,'path');p.setAttribute('d',d);p.setAttribute('class',cls);if(transform)p.setAttribute('transform',transform);parent.appendChild(p);return p}
+for(const o of MALE_FRONT.outline){addPath(mapLines,o.d,'outline-line');if(o.side==='LEFT')addPath(mapLines,o.d,'outline-line',mirrorSvg())}
+for(const m of MALE_FRONT.muscles){addPath(mapLines,m.d,'map-line');if(m.side==='LEFT')addPath(mapLines,m.d,'map-line',mirrorSvg())}
+function autoGroup(m){const s=(String(m.group||'')+' '+String(m.id||'')).toUpperCase();return s.includes('CHEST')||s.includes('SHOULDER')||s.includes('DELTOID')||s.includes('ABS')||s.includes('RECTUS')||s.includes('QUAD');}
+function drawSource(t){const dw=W*t.s*t.sx,dh=H*t.s*t.sy,px=(W-dw)/2+t.dx,py=(H-dh)/2+t.dy;ctx.drawImage(img,px,py,dw,dh)}
+function baseRect(){const dw=W*BASE.s*BASE.sx,dh=H*BASE.s*BASE.sy;return {x:(W-dw)/2+BASE.dx,y:(H-dh)/2+BASE.dy,w:dw,h:dh}}
+function fitKey(m,mirrored){return `${m.id||m.group}:${mirrored?'R':'N'}`}
+function svgPathData(m,mirrored){const svg=document.createElementNS(NS,'svg');svg.setAttribute('viewBox',`0 0 ${W} ${H}`);svg.style.cssText='position:absolute;width:0;height:0;overflow:hidden;opacity:0;pointer-events:none';const p=document.createElementNS(NS,'path');p.setAttribute('d',m.d);svg.appendChild(p);document.body.appendChild(svg);const bb=p.getBBox();const len=p.getTotalLength();const pts=[];const count=Math.max(38,Math.min(82,Math.round(len/12)));for(let i=0;i<count;i++){const q=p.getPointAtLength((i/count)*len);pts.push({x:mirrored?2*CX-q.x:q.x,y:q.y})}svg.remove();const box=mirrored?{x:2*CX-(bb.x+bb.width),y:bb.y,width:bb.width,height:bb.height}:bb;return {pts,box}}
+function buildEdgeMap(){const ew=384,eh=576,c=document.createElement('canvas');c.width=ew;c.height=eh;const ec=c.getContext('2d',{willReadFrequently:true});ec.drawImage(img,0,0,ew,eh);const d=ec.getImageData(0,0,ew,eh).data,g=new Float32Array(ew*eh);for(let y=0;y<eh;y++)for(let x=0;x<ew;x++){const i=(y*ew+x)*4;g[y*ew+x]=.299*d[i]+.587*d[i+1]+.114*d[i+2]}const e=new Uint8Array(ew*eh);for(let y=1;y<eh-1;y++)for(let x=1;x<ew-1;x++){const gx=Math.abs(g[y*ew+x+1]-g[y*ew+x-1]),gy=Math.abs(g[(y+1)*ew+x]-g[(y-1)*ew+x]);e[y*ew+x]=Math.min(255,(gx+gy)*1.45)}return {data:e,w:ew,h:eh}}
+let edge=null;
+function sampleEdge(tx,ty,box,c){const br=baseRect();const bx=c.cx+(tx-c.cx-c.dx)/c.sx,by=c.cy+(ty-c.cy-c.dy)/c.sy;const ux=(bx-br.x)/br.w*W,uy=(by-br.y)/br.h*H;if(ux<1||uy<1||ux>W-2||uy>H-2)return 0;const x=Math.max(0,Math.min(edge.w-1,Math.round(ux/W*edge.w))),y=Math.max(0,Math.min(edge.h-1,Math.round(uy/H*edge.h)));return edge.data[y*edge.w+x]/255}
+function scoreCandidate(pts,box,c){let sum=0;for(const p of pts)sum+=sampleEdge(p.x,p.y,box,c);const mean=sum/pts.length;const reg=(Math.abs(c.dx)+Math.abs(c.dy))/900+(Math.abs(c.sx-1)+Math.abs(c.sy-1))*.08;return mean-reg}
+function fitOne(m,mirrored){const {pts,box}=svgPathData(m,mirrored);if(box.width<12||box.height<12)return {dx:0,dy:0,sx:1,sy:1,score:0,cx:box.x+box.width/2,cy:box.y+box.height/2};const cx=box.x+box.width/2,cy=box.y+box.height/2;let best={dx:0,dy:0,sx:1,sy:1,score:-1,cx,cy};const shifts=[-18,-9,0,9,18],scales=[.90,.95,1,1.05,1.10];for(const dx of shifts)for(const dy of shifts)for(const sx of scales)for(const sy of scales){const c={dx,dy,sx,sy,cx,cy};const sc=scoreCandidate(pts,box,c);if(sc>best.score)best={...c,score:sc}}
+const b=best;for(let dx=b.dx-6;dx<=b.dx+6;dx+=3)for(let dy=b.dy-6;dy<=b.dy+6;dy+=3)for(let sx=b.sx-.04;sx<=b.sx+.041;sx+=.02)for(let sy=b.sy-.04;sy<=b.sy+.041;sy+=.02){const c={dx,dy,sx,sy,cx,cy};const sc=scoreCandidate(pts,box,c);if(sc>best.score)best={...c,score:sc}}return best}
+function clippedDrawPath(m,mirrored,fit){ctx.save();if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}const p=new Path2D(m.d);ctx.clip(p);if(mirrored){ctx.scale(-1,1);ctx.translate(-2*CX,0)}if(autoOn&&fit){ctx.translate(fit.cx+fit.dx,fit.cy+fit.dy);ctx.scale(fit.sx,fit.sy);ctx.translate(-fit.cx,-fit.cy)}drawSource(BASE);ctx.restore()}
+function clippedOutline(d,mirrored,alpha=.78){ctx.save();if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}ctx.clip(new Path2D(d));ctx.globalAlpha=alpha;if(mirrored){ctx.scale(-1,1);ctx.translate(-2*CX,0)}drawSource(BASE);ctx.restore()}
+function clippedGold(m,mirrored){ctx.save();if(mirrored){ctx.translate(2*CX,0);ctx.scale(-1,1)}ctx.clip(new Path2D(m.d));ctx.globalCompositeOperation='color';ctx.fillStyle='rgb(215,183,93)';ctx.fillRect(0,0,W,H);ctx.globalCompositeOperation='screen';const g=ctx.createRadialGradient(W*.5,H*.27,20,W*.5,H*.36,270);g.addColorStop(0,'rgba(255,233,154,.23)');g.addColorStop(1,'rgba(255,220,110,0)');ctx.fillStyle=g;ctx.fillRect(0,0,W,H);ctx.restore()}
+function render(){if(!img)return;ctx.clearRect(0,0,W,H);const bg=ctx.createRadialGradient(W*.5,H*.36,60,W*.5,H*.5,820);bg.addColorStop(0,'#33363a');bg.addColorStop(.52,'#181b1f');bg.addColorStop(1,'#07090c');ctx.fillStyle=bg;ctx.fillRect(0,0,W,H);for(const o of MALE_FRONT.outline){clippedOutline(o.d,false);if(o.side==='LEFT')clippedOutline(o.d,true)}for(const m of MALE_FRONT.muscles){clippedDrawPath(m,false,fits.get(fitKey(m,false)));if(m.side==='LEFT')clippedDrawPath(m,true,fits.get(fitKey(m,true)))}if(goldOn){for(const m of MALE_FRONT.muscles){if(m.group==='CHEST'||String(m.id||'').startsWith('CHEST_')){clippedGold(m,false);if(m.side==='LEFT')clippedGold(m,true)}}}}
+async function runAutoFit(){status.style.display='block';status.className='status';const targets=[];for(const m of MALE_FRONT.muscles){if(autoGroup(m)){targets.push([m,false]);if(m.side==='LEFT')targets.push([m,true])}}status.textContent=`Auto fitting ${targets.length} muscle containers…`;fits.clear();let i=0;for(const [m,mirrored] of targets){fits.set(fitKey(m,mirrored),fitOne(m,mirrored));i++;if(i%3===0){status.textContent=`Auto fitting ${i}/${targets.length}…`;await new Promise(r=>requestAnimationFrame(r))}}const vals=[...fits.values()];const avg=vals.length?vals.reduce((a,b)=>a+b.score,0)/vals.length:0;readout.textContent=`Auto-fit complete: ${vals.length} containers\nAverage edge match: ${avg.toFixed(3)}\nOuter body: locked at x -1 / y 2 / width 0.845`;status.textContent='Automatic muscle fit complete ✓';status.classList.add('ok');render();setTimeout(()=>status.style.display='none',1300)}
+document.getElementById('fitBtn').onclick=()=>{autoOn=!autoOn;const b=document.getElementById('fitBtn');b.classList.toggle('active',autoOn);b.textContent=`Auto fit ${autoOn?'ON':'OFF'}`;render()};document.getElementById('mapBtn').onclick=()=>{mapOn=!mapOn;mapSvg.style.display=mapOn?'block':'none';const b=document.getElementById('mapBtn');b.classList.toggle('active',mapOn);b.textContent=`Map ${mapOn?'ON':'OFF'}`};document.getElementById('goldBtn').onclick=()=>{goldOn=!goldOn;const b=document.getElementById('goldBtn');b.classList.toggle('active',goldOn);b.textContent=`Gold ${goldOn?'ON':'OFF'}`;render()};
+img=new Image();img.onload=async()=>{edge=buildEdgeMap();status.textContent='Detailed source loaded ✓';await runAutoFit()};img.onerror=()=>{status.textContent='Detailed source failed to load';status.classList.add('err')};img.src='assets/anatomy-detail-front-fit-256.webp?v=6';
+</script>
+</body></html>
