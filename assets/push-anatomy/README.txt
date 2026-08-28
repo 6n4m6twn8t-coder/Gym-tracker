@@ -1,0 +1,1 @@
+Binary anatomy assets are committed via Git blobs; this folder is used by push-anatomy.js.
