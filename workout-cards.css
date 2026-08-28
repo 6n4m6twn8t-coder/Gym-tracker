@@ -1,0 +1,169 @@
+/* Workout card cleanup — keeps tracker logic/anatomy assets unchanged. */
+
+/* The workout wrapper becomes a quiet stage; each exercise is the card. */
+#app>.card:has(.exercise){
+  padding:0;
+  border:0;
+  background:transparent;
+  box-shadow:none;
+}
+#app>.card:has(.exercise)>.tiny{
+  display:block;
+  margin:2px 4px 5px;
+  color:var(--accent);
+  font-size:9px;
+  font-weight:850;
+  letter-spacing:.16em;
+}
+#app>.card:has(.exercise)>h2{
+  margin:0 4px 12px;
+  font-size:22px;
+  letter-spacing:-.025em;
+}
+
+.exercise{
+  position:relative;
+  margin:10px 0;
+  padding:16px;
+  overflow:hidden;
+  border:1px solid #292f39;
+  border-radius:19px;
+  background:
+    radial-gradient(circle at 92% 0,rgba(241,207,105,.045),transparent 31%),
+    linear-gradient(180deg,rgba(23,26,33,.98),rgba(15,17,23,.99));
+  box-shadow:0 10px 26px rgba(0,0,0,.18),0 1px 0 rgba(255,255,255,.025) inset;
+}
+.exercise:first-of-type{border-top:1px solid #292f39}
+.exercise+.exercise{margin-top:12px}
+.exercise.skipped{opacity:.58}
+
+.exerciseHead{
+  gap:12px;
+  align-items:flex-start;
+}
+.exerciseHead>div:first-child{padding-top:1px}
+.titleLine{gap:7px}
+.titleLine b{
+  font-size:16px;
+  line-height:1.18;
+  font-weight:790;
+  letter-spacing:-.018em;
+}
+.prescription{
+  margin-top:5px;
+  color:#a2a8b2;
+  font-size:11px;
+  line-height:1.35;
+}
+.previous{
+  margin-top:5px;
+  color:#cbb56d;
+  font-size:10px;
+  font-weight:650;
+}
+.autofill{margin-top:3px;font-size:9px}
+.prBadge{padding:3px 6px;font-size:7px}
+
+/* Controls read as secondary actions instead of competing with the exercise. */
+.exerciseTools{
+  gap:4px;
+  max-width:176px;
+}
+.toolButton{
+  min-height:29px;
+  padding:6px 8px;
+  border:1px solid #303641;
+  border-radius:9px;
+  background:rgba(13,15,20,.82);
+  color:#aeb4bd;
+  font-size:9px;
+  font-weight:720;
+}
+.toolButton:active{background:#1b1f27;border-color:#3a414c}
+.skipTool{color:#8d939c}
+
+/* Make the anatomy feel built into the exercise card, not bolted on beneath it. */
+.exercise .muscleFocus{
+  height:168px;
+  margin:13px -5px 3px;
+  border:1px solid rgba(255,255,255,.045);
+  border-radius:14px;
+  background:
+    radial-gradient(circle at 50% 45%,rgba(255,255,255,.025),transparent 48%),
+    #0b0d11;
+  box-shadow:0 1px 0 rgba(255,255,255,.018) inset;
+}
+.exercise .muscleFocusImg{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+}
+
+.similarPanel,.exerciseNotePanel{
+  margin-top:10px;
+  padding:10px;
+  border-color:#2b313b;
+  border-radius:12px;
+  background:#0e1116;
+}
+.similarChoice{padding:9px 10px;border-radius:10px}
+.exerciseNotePanel textarea{min-height:54px}
+.skippedState{margin-top:11px}
+
+/* Logging block: tighter rhythm, clearer columns, larger tap targets where needed. */
+.sets{
+  grid-template-columns:27px minmax(0,1fr) minmax(0,1fr) 40px;
+  gap:7px;
+  margin-top:14px;
+  padding-top:12px;
+  border-top:1px solid rgba(255,255,255,.055);
+}
+.sets .head{
+  color:#737b86;
+  font-size:8px;
+  letter-spacing:.11em;
+}
+.sets span{font-size:11px;color:#b7bcc4}
+.sets input{
+  height:39px;
+  padding:8px 6px;
+  border-color:#2a3039;
+  border-radius:10px;
+  background:#0d1015;
+  font-size:15px;
+}
+.sets input:focus{
+  border-color:rgba(241,207,105,.55);
+  background:#11141a;
+  box-shadow:0 0 0 2px rgba(241,207,105,.065);
+}
+.done{
+  width:37px;
+  height:37px;
+  border-radius:10px;
+  font-size:17px;
+}
+.progressionCue{
+  margin-top:10px;
+  padding:9px 10px;
+  border-radius:10px;
+  font-size:10px;
+}
+
+@media(max-width:390px){
+  #app>.card:has(.exercise)>h2{margin-bottom:10px;font-size:21px}
+  .exercise{padding:14px;border-radius:17px}
+  .exerciseHead{display:block}
+  .titleLine b{font-size:15.5px}
+  .prescription{font-size:10.5px}
+  .exerciseTools{
+    justify-content:flex-start;
+    max-width:none;
+    margin-top:9px;
+  }
+  .toolButton{min-height:28px;padding:5px 8px;font-size:9px}
+  .exercise .muscleFocus{height:154px;margin:11px -3px 2px}
+  .sets{grid-template-columns:25px minmax(0,1fr) minmax(0,1fr) 37px;gap:6px;margin-top:12px;padding-top:11px}
+  .sets input{height:38px;padding:7px 4px;font-size:15px}
+  .done{width:35px;height:35px}
+}
