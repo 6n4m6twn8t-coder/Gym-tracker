@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Athlete — Candidate + Real MuscleMap</title>
+<style>
+:root{color-scheme:dark;--bg:#07090c;--panel:#11151b;--line:#292f38;--text:#f2efe8;--muted:#9aa1aa;--gold:#d7b75d;--cyan:#25e6ff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:calc(12px + env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom))}.wrap{max-width:540px;margin:auto}h1{font-size:21px;margin:0 0 5px}.sub{font-size:12px;line-height:1.45;color:var(--muted);margin:0 0 10px}.stage{position:relative;width:100%;aspect-ratio:2/3;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#d8d8d8}.stage>*{position:absolute;inset:0;width:100%;height:100%}.body{z-index:1;object-fit:fill}.map{z-index:3;pointer-events:none}.map-line{fill:none;stroke:var(--cyan);stroke-width:1.35;stroke-opacity:.82;vector-effect:non-scaling-stroke}.outline-line{fill:none;stroke:var(--cyan);stroke-width:2.2;stroke-opacity:.98;vector-effect:non-scaling-stroke}.gold{fill:rgba(215,183,93,.48);stroke:rgba(215,183,93,.88);stroke-width:.75;vector-effect:non-scaling-stroke;mix-blend-mode:multiply}.panel{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:7px}button{border:1px solid #3a414c;background:#181d24;color:var(--text);border-radius:11px;padding:10px 7px;font-weight:700;font-size:13px}button.active{border-color:#7d6933;background:#211c10;color:#ead17a}.range{margin-top:12px}.range label{display:flex;justify-content:space-between;color:#c7ccd2;font-size:12px;margin-bottom:6px}.range input{width:100%}.readout{margin-top:10px;padding:9px 10px;border-radius:10px;background:#0b0e12;border:1px solid #222831;font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:#c8cdd3;line-height:1.45}.pill{display:inline-block;margin:8px 5px 0 0;padding:5px 8px;border:1px solid #6c5b2d;border-radius:999px;color:#e3c970;background:#1d190e;font-size:10px}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Candidate body + actual MuscleMap</h1>
+<p class="sub">This is the real fit check. The anatomy image is the new clean candidate. Every cyan line and the gold chest are generated live from the actual @musclemap/assets SVG paths used by the app.</p>
+<div class="stage">
+  <img id="body" class="body" src="assets/anatomy-candidate-framework-fit-v1.jpg?v=1" alt="Candidate detailed anatomy body">
+  <svg class="map" viewBox="0 0 1024 1536" preserveAspectRatio="none"><g id="gold"></g><g id="lines"></g></svg>
+</div>
+<div class="panel">
+  <div class="grid"><button id="bodyBtn" class="active">Body ON</button><button id="mapBtn" class="active">Map ON</button><button id="goldBtn" class="active">Gold ON</button></div>
+  <div class="range"><label><span>Body opacity</span><span id="opVal">100%</span></label><input id="opacity" type="range" min="20" max="100" value="100" step="5"></div>
+  <div><span class="pill">REAL MUSCLEMAP PATHS</span><span class="pill">NEW CANDIDATE BODY</span></div>
+  <div class="readout">Framework transform: none<br>Body transform: none<br>Canvas ratio: exact 2:3<br>Manual SVG edits: none</div>
+</div>
+</div>
+<script type="module">
+import { MALE_FRONT } from 'https://esm.sh/@musclemap/assets@1.0.1?bundle';
+const NS='http://www.w3.org/2000/svg',CX=MALE_FRONT.centerX;
+const lines=document.getElementById('lines'),gold=document.getElementById('gold'),body=document.getElementById('body');
+const mirror=()=>`translate(${2*CX} 0) scale(-1 1)`;
+function add(parent,d,cls,transform=''){const p=document.createElementNS(NS,'path');p.setAttribute('d',d);p.setAttribute('class',cls);if(transform)p.setAttribute('transform',transform);parent.appendChild(p)}
+for(const o of MALE_FRONT.outline){add(lines,o.d,'outline-line');if(o.side==='LEFT')add(lines,o.d,'outline-line',mirror())}
+for(const m of MALE_FRONT.muscles){add(lines,m.d,'map-line');if(m.side==='LEFT')add(lines,m.d,'map-line',mirror());const key=(String(m.group||'')+' '+String(m.id||'')).toUpperCase();if(key.includes('CHEST')){add(gold,m.d,'gold');if(m.side==='LEFT')add(gold,m.d,'gold',mirror())}}
+let bodyOn=true,mapOn=true,goldOn=true;
+function setBtn(id,on,label){const b=document.getElementById(id);b.classList.toggle('active',on);b.textContent=`${label} ${on?'ON':'OFF'}`}
+document.getElementById('bodyBtn').onclick=()=>{bodyOn=!bodyOn;body.style.display=bodyOn?'block':'none';setBtn('bodyBtn',bodyOn,'Body')};
+document.getElementById('mapBtn').onclick=()=>{mapOn=!mapOn;lines.style.display=mapOn?'block':'none';setBtn('mapBtn',mapOn,'Map')};
+document.getElementById('goldBtn').onclick=()=>{goldOn=!goldOn;gold.style.display=goldOn?'block':'none';setBtn('goldBtn',goldOn,'Gold')};
+const opacity=document.getElementById('opacity'),opVal=document.getElementById('opVal');opacity.oninput=()=>{body.style.opacity=opacity.value/100;opVal.textContent=opacity.value+'%'};
+</script>
+</body></html>
