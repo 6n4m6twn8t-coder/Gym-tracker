@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Athlete — Framework Render V4</title>
+<style>
+:root{color-scheme:dark;--bg:#07090c;--panel:#11151b;--line:#292f38;--text:#f2efe8;--muted:#9aa1aa;--gold:#d7b75d;--cyan:#25e6ff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:calc(12px + env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom))}.wrap{max-width:540px;margin:auto}h1{font-size:21px;margin:0 0 5px}.sub{font-size:12px;line-height:1.45;color:var(--muted);margin:0 0 10px}.stage{position:relative;width:100%;aspect-ratio:2/3;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:radial-gradient(circle at 50% 42%,#1a1e23 0,#0d1014 45%,#07090c 78%)}svg{display:block;width:100%;height:100%}.panel{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}button{border:1px solid #3a414c;background:#181d24;color:var(--text);border-radius:11px;padding:10px 7px;font-weight:700;font-size:13px}button.active{border-color:#7d6933;background:#211c10;color:#ead17a}.pill{display:inline-block;margin:8px 5px 0 0;padding:5px 8px;border:1px solid #6c5b2d;border-radius:999px;color:#e3c970;background:#1d190e;font-size:10px}.readout{margin-top:10px;padding:9px 10px;border-radius:10px;background:#0b0e12;border:1px solid #222831;font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:#c8cdd3;line-height:1.45}.map-line{fill:none;stroke:var(--cyan);stroke-width:1.25;stroke-opacity:.72;vector-effect:non-scaling-stroke}.outline-line{fill:none;stroke:var(--cyan);stroke-width:2;stroke-opacity:.92;vector-effect:non-scaling-stroke}.base-muscle{fill:url(#muscleVolume)}.texture-image{filter:url(#texturePolish);opacity:.92}.texture-soft{filter:url(#tonePolish);opacity:.34;mix-blend-mode:screen}.gold{fill:rgba(215,183,93,.62);stroke:rgba(232,204,116,.38);stroke-width:.65;vector-effect:non-scaling-stroke;mix-blend-mode:color}.shell{opacity:.34;mix-blend-mode:screen;filter:url(#shellPolish)}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Framework render V4</h1>
+<p class="sub">The MuscleMap geometry is locked. The detailed anatomy image is now used only as visual material inside each exact muscle container. Cyan is debug-only and starts OFF.</p>
+<div class="stage">
+<svg id="anatomy" viewBox="0 0 1024 1536" preserveAspectRatio="none" aria-label="Detailed anatomy inside exact MuscleMap containers">
+<defs id="defs">
+  <linearGradient id="muscleVolume" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0" stop-color="#d8d9d6"/><stop offset=".42" stop-color="#8e9293"/><stop offset=".75" stop-color="#565b5e"/><stop offset="1" stop-color="#2e3337"/>
+  </linearGradient>
+  <filter id="texturePolish" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer>
+      <feFuncR type="linear" slope="1.34" intercept="-.08"/><feFuncG type="linear" slope="1.34" intercept="-.08"/><feFuncB type="linear" slope="1.34" intercept="-.08"/>
+    </feComponentTransfer>
+    <feGaussianBlur stdDeviation="0.22"/>
+  </filter>
+  <filter id="tonePolish" x="-8%" y="-8%" width="116%" height="116%" color-interpolation-filters="sRGB">
+    <feColorMatrix type="saturate" values="0"/>
+    <feGaussianBlur stdDeviation="3.2"/>
+    <feComponentTransfer><feFuncR type="linear" slope="1.18" intercept="-.04"/><feFuncG type="linear" slope="1.18" intercept="-.04"/><feFuncB type="linear" slope="1.18" intercept="-.04"/></feComponentTransfer>
+  </filter>
+  <filter id="shellPolish" color-interpolation-filters="sRGB">
+    <feColorMatrix type="saturate" values="0"/>
+    <feComponentTransfer><feFuncR type="linear" slope="1.15" intercept="-.12"/><feFuncG type="linear" slope="1.15" intercept="-.12"/><feFuncB type="linear" slope="1.15" intercept="-.12"/></feComponentTransfer>
+  </filter>
+</defs>
+<image id="shell" class="shell" href="assets/anatomy-clean-framework-fit-512.jpg?v=4" x="0" y="0" width="1024" height="1536" preserveAspectRatio="none"/>
+<g id="muscleBases"></g>
+<g id="muscleTextures"></g>
+<g id="goldLayer"></g>
+<g id="mapLayer" style="display:none"></g>
+</svg>
+</div>
+<div class="panel">
+  <div class="grid">
+    <button id="textureBtn" class="active">Texture ON</button><button id="shellBtn" class="active">Shell ON</button>
+    <button id="mapBtn">Map OFF</button><button id="goldBtn" class="active">Gold ON</button>
+  </div>
+  <div><span class="pill">FRAMEWORK LOCKED</span><span class="pill">PER-MUSCLE CONTAINERS</span></div>
+  <div class="readout" id="readout">Building exact muscle containers…</div>
+</div>
+</div>
+<script type="module">
+import { MALE_FRONT } from 'https://esm.sh/@musclemap/assets@1.0.1?bundle';
+const NS='http://www.w3.org/2000/svg', XL='http://www.w3.org/1999/xlink', CX=MALE_FRONT.centerX;
+const defs=document.getElementById('defs'),bases=document.getElementById('muscleBases'),textures=document.getElementById('muscleTextures'),gold=document.getElementById('goldLayer'),map=document.getElementById('mapLayer'),shell=document.getElementById('shell'),readout=document.getElementById('readout');
+const SOURCE='assets/anatomy-clean-framework-fit-512.jpg?v=4';
+const mirror=()=>`translate(${2*CX} 0) scale(-1 1)`;
+const svgEl=(name)=>document.createElementNS(NS,name);
+function pathEl(d,cls,transform=''){const p=svgEl('path');p.setAttribute('d',d);if(cls)p.setAttribute('class',cls);if(transform)p.setAttribute('transform',transform);return p}
+function imageEl(cls,clipId,filterClass=''){const im=svgEl('image');im.setAttribute('x','0');im.setAttribute('y','0');im.setAttribute('width','1024');im.setAttribute('height','1536');im.setAttribute('preserveAspectRatio','none');im.setAttribute('href',SOURCE);im.setAttributeNS(XL,'xlink:href',SOURCE);im.setAttribute('clip-path',`url(#${clipId})`);im.setAttribute('class',`${cls} ${filterClass}`.trim());return im}
+function buildPiece(m,index,transform='',suffix='a'){
+  const clipId=`muscleClip-${index}-${suffix}`;
+  const cp=svgEl('clipPath');cp.setAttribute('id',clipId);cp.setAttribute('clipPathUnits','userSpaceOnUse');cp.appendChild(pathEl(m.d,'',transform));defs.appendChild(cp);
+  bases.appendChild(pathEl(m.d,'base-muscle',transform));
+  textures.appendChild(imageEl('texture-image',clipId));
+  textures.appendChild(imageEl('texture-soft',clipId));
+  const key=(String(m.group||'')+' '+String(m.id||'')).toUpperCase();
+  if(key.includes('CHEST'))gold.appendChild(pathEl(m.d,'gold',transform));
+  map.appendChild(pathEl(m.d,'map-line',transform));
+}
+MALE_FRONT.outline.forEach(o=>{map.appendChild(pathEl(o.d,'outline-line'));if(o.side==='LEFT')map.appendChild(pathEl(o.d,'outline-line',mirror()))});
+MALE_FRONT.muscles.forEach((m,i)=>{buildPiece(m,i,'','native');if(m.side==='LEFT')buildPiece(m,i,mirror(),'mirror')});
+readout.innerHTML=`Muscle containers: ${MALE_FRONT.muscles.length}<br>Geometry: exact @musclemap/assets paths<br>Texture: detailed anatomy clipped independently per muscle<br>Framework transform: none<br>Manual per-muscle edits: none`;
+let textureOn=true,shellOn=true,mapOn=false,goldOn=true;
+function setBtn(id,on,label){const b=document.getElementById(id);b.classList.toggle('active',on);b.textContent=`${label} ${on?'ON':'OFF'}`}
+document.getElementById('textureBtn').onclick=()=>{textureOn=!textureOn;bases.style.display=textureOn?'block':'none';textures.style.display=textureOn?'block':'none';setBtn('textureBtn',textureOn,'Texture')};
+document.getElementById('shellBtn').onclick=()=>{shellOn=!shellOn;shell.style.display=shellOn?'block':'none';setBtn('shellBtn',shellOn,'Shell')};
+document.getElementById('mapBtn').onclick=()=>{mapOn=!mapOn;map.style.display=mapOn?'block':'none';setBtn('mapBtn',mapOn,'Map')};
+document.getElementById('goldBtn').onclick=()=>{goldOn=!goldOn;gold.style.display=goldOn?'block':'none';setBtn('goldBtn',goldOn,'Gold')};
+</script>
+</body></html>
