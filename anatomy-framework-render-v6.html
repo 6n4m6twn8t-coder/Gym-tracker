@@ -1,0 +1,63 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Project Athlete — Framework Render V6</title>
+<style>
+:root{color-scheme:dark;--bg:#07090c;--panel:#11151b;--line:#292f38;--text:#f2efe8;--muted:#9aa1aa;--gold:#d7b75d;--cyan:#25e6ff}
+*{box-sizing:border-box}html,body{margin:0;background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif}body{padding:calc(12px + env(safe-area-inset-top)) 12px calc(22px + env(safe-area-inset-bottom))}.wrap{max-width:540px;margin:auto}h1{font-size:21px;margin:0 0 5px}.sub{font-size:12px;line-height:1.45;color:var(--muted);margin:0 0 10px}.stage{position:relative;width:100%;aspect-ratio:2/3;border:1px solid var(--line);border-radius:18px;overflow:hidden;background:#090c10}.stage svg{display:block;width:100%;height:100%}.panel{margin-top:10px;background:var(--panel);border:1px solid var(--line);border-radius:16px;padding:12px}.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:7px}button{border:1px solid #3a414c;background:#181d24;color:var(--text);border-radius:11px;padding:10px 7px;font-weight:700;font-size:13px}button.active{border-color:#7d6933;background:#211c10;color:#ead17a}.map-line{fill:none;stroke:var(--cyan);stroke-width:1.25;stroke-opacity:.82;vector-effect:non-scaling-stroke}.outline-line{fill:none;stroke:var(--cyan);stroke-width:2;stroke-opacity:.96;vector-effect:non-scaling-stroke}.gold{fill:rgba(215,183,93,.56);stroke:rgba(235,210,127,.56);stroke-width:.7;vector-effect:non-scaling-stroke;mix-blend-mode:color}.pill{display:inline-block;margin:8px 5px 0 0;padding:5px 8px;border:1px solid #6c5b2d;border-radius:999px;color:#e3c970;background:#1d190e;font-size:10px}.readout{margin-top:10px;padding:9px 10px;border-radius:10px;background:#0b0e12;border:1px solid #222831;font:11px ui-monospace,SFMono-Regular,Menlo,monospace;color:#c8cdd3;line-height:1.45}.status{position:absolute;left:10px;top:10px;z-index:5;padding:6px 8px;border-radius:8px;background:rgba(7,9,12,.82);font-size:10px;color:#b7efc0}
+</style>
+</head>
+<body><div class="wrap">
+<h1>Framework render V6</h1>
+<p class="sub">The body image stays unchanged. One SVG mask built from the untouched MuscleMap paths reveals detail only inside the exact muscle framework. No filters, no clipPath and no per-muscle image copies.</p>
+<div class="stage">
+<svg id="anatomy" viewBox="0 0 1024 1536" preserveAspectRatio="none">
+<defs>
+  <mask id="muscleMask" maskUnits="userSpaceOnUse" maskContentUnits="userSpaceOnUse" x="0" y="0" width="1024" height="1536">
+    <rect x="0" y="0" width="1024" height="1536" fill="black"/>
+    <g id="maskPaths" fill="white"></g>
+  </mask>
+</defs>
+<image id="shell" href="assets/anatomy-clean-framework-fit-512.jpg?v=6" x="0" y="0" width="1024" height="1536" preserveAspectRatio="none" opacity=".22"/>
+<image id="detail" href="assets/anatomy-clean-framework-fit-512.jpg?v=6" x="0" y="0" width="1024" height="1536" preserveAspectRatio="none" mask="url(#muscleMask)"/>
+<g id="goldLayer"></g>
+<g id="mapLayer" style="display:none"></g>
+</svg>
+<div id="status" class="status">Building exact mask…</div>
+</div>
+<div class="panel">
+<div class="grid"><button id="detailBtn" class="active">Detail ON</button><button id="shellBtn" class="active">Shell ON</button><button id="mapBtn">Map OFF</button><button id="goldBtn" class="active">Gold ON</button></div>
+<div><span class="pill">FRAMEWORK UNTOUCHED</span><span class="pill">ONE SVG MASK</span></div>
+<div class="readout" id="readout">Building untouched MuscleMap mask…</div>
+</div></div>
+<script type="module">
+import { MALE_FRONT } from 'https://esm.sh/@musclemap/assets@1.0.1?bundle';
+const NS='http://www.w3.org/2000/svg',CX=MALE_FRONT.centerX;
+const mask=document.getElementById('maskPaths'),gold=document.getElementById('goldLayer'),map=document.getElementById('mapLayer'),detail=document.getElementById('detail'),shell=document.getElementById('shell'),status=document.getElementById('status'),readout=document.getElementById('readout');
+const mirror=()=>`translate(${2*CX} 0) scale(-1 1)`;
+function p(d,cls='',transform=''){const el=document.createElementNS(NS,'path');el.setAttribute('d',d);if(cls)el.setAttribute('class',cls);if(transform)el.setAttribute('transform',transform);return el}
+for(const o of MALE_FRONT.outline){map.appendChild(p(o.d,'outline-line'));if(o.side==='LEFT')map.appendChild(p(o.d,'outline-line',mirror()))}
+let pieces=0;
+for(const m of MALE_FRONT.muscles){
+  mask.appendChild(p(m.d));pieces++;
+  map.appendChild(p(m.d,'map-line'));
+  const key=(String(m.group||'')+' '+String(m.id||'')).toUpperCase();
+  if(key.includes('CHEST'))gold.appendChild(p(m.d,'gold'));
+  if(m.side==='LEFT'){
+    mask.appendChild(p(m.d,'',mirror()));pieces++;
+    map.appendChild(p(m.d,'map-line',mirror()));
+    if(key.includes('CHEST'))gold.appendChild(p(m.d,'gold',mirror()));
+  }
+}
+status.textContent='Exact SVG mask loaded ✓';setTimeout(()=>status.style.display='none',1200);
+readout.innerHTML=`Mask pieces: ${pieces}<br>Framework geometry: untouched<br>Anatomy image copies: 1 detail + 1 dim shell<br>SVG filters: none<br>clipPath: none<br>Manual muscle edits: none`;
+let detailOn=true,shellOn=true,mapOn=false,goldOn=true;
+function btn(id,on,label){const b=document.getElementById(id);b.classList.toggle('active',on);b.textContent=`${label} ${on?'ON':'OFF'}`}
+document.getElementById('detailBtn').onclick=()=>{detailOn=!detailOn;detail.style.display=detailOn?'block':'none';btn('detailBtn',detailOn,'Detail')};
+document.getElementById('shellBtn').onclick=()=>{shellOn=!shellOn;shell.style.display=shellOn?'block':'none';btn('shellBtn',shellOn,'Shell')};
+document.getElementById('mapBtn').onclick=()=>{mapOn=!mapOn;map.style.display=mapOn?'block':'none';btn('mapBtn',mapOn,'Map')};
+document.getElementById('goldBtn').onclick=()=>{goldOn=!goldOn;gold.style.display=goldOn?'block':'none';btn('goldBtn',goldOn,'Gold')};
+</script>
+</body></html>
