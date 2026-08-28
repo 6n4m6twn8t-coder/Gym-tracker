@@ -1,5 +1,5 @@
-// Push exercise muscle-focus images. Uses one sprite image so the workout cards stay simple.
-(()=>{
+// Push exercise muscle-focus images. Uses one sprite loaded from base64 text to avoid binary asset issues on iPhone/Safari.
+(async()=>{
 const ART={
   'Incline Dumbbell Press':0,
   'Flat Dumbbell Press':1,
@@ -9,15 +9,20 @@ const ART={
   'Overhead Cable Extension':5,
   'Cable Crunch':6
 };
+let sprite='';
+try{
+  const encoded=await fetch('assets/push-anatomy-sprite.txt?v=1',{cache:'no-store'}).then(r=>{if(!r.ok)throw new Error('sprite');return r.text()});
+  sprite=`data:image/webp;base64,${encoded.trim()}`;
+}catch(e){console.warn('Push anatomy sprite failed to load',e);return}
 const style=document.createElement('style');
 style.id='pushAnatomyStyles';
 style.textContent=`
-.muscleFocus{margin:12px 0 2px;height:190px;border:1px solid #272c36;border-radius:14px;overflow:hidden;background-color:#090b0f;background-image:url('assets/push-anatomy-sprite.webp?v=1');background-size:700% 100%;background-repeat:no-repeat;box-shadow:0 1px 0 rgba(255,255,255,.025) inset}
+.muscleFocus{margin:12px 0 2px;height:190px;border:1px solid #272c36;border-radius:14px;overflow:hidden;background-color:#090b0f;background-size:700% 100%;background-repeat:no-repeat;box-shadow:0 1px 0 rgba(255,255,255,.025) inset}
 @media(max-width:390px){.muscleFocus{height:176px;margin-top:10px}}
 `;
 document.head.appendChild(style);
 function decoratePushAnatomy(){
-  if(!window.active||!Array.isArray(active.exercises))return;
+  if(!active||!Array.isArray(active.exercises))return;
   document.querySelectorAll('.exercise').forEach((node,i)=>{
     if(node.querySelector('.muscleFocus'))return;
     const ex=active.exercises[i];
@@ -29,13 +34,12 @@ function decoratePushAnatomy(){
     panel.className='muscleFocus';
     panel.setAttribute('role','img');
     panel.setAttribute('aria-label',`${ex.name} muscle focus`);
-    panel.style.backgroundPosition=`${pos===0?0:(pos/(6))*100}% 0%`;
+    panel.style.backgroundImage=`url("${sprite}")`;
+    panel.style.backgroundPosition=`${pos===0?0:(pos/6)*100}% 0%`;
     head.insertAdjacentElement('afterend',panel);
   });
 }
-const baseWorkout=window.workout;
-if(typeof baseWorkout==='function'){
-  window.workout=function(){const out=baseWorkout.apply(this,arguments);decoratePushAnatomy();return out};
-}
-if(typeof window.render==='function')window.render();
+const baseWorkout=workout;
+workout=function(){const out=baseWorkout.apply(this,arguments);decoratePushAnatomy();return out};
+render();
 })();
