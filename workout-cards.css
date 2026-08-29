@@ -102,40 +102,27 @@
 }
 .skipTool{color:#777e88}
 
-/* Anatomy treatment: darker brass highlights, less yellow and less surrounding haze. */
+/* Full-body anatomy: flat black field, no glow, no CSS colour treatment. */
 .exercise .muscleFocus{
   position:relative;
-  isolation:isolate;
-  height:172px;
+  height:245px;
   margin:14px -5px 3px;
-  padding:9px 12px;
+  padding:0;
   overflow:hidden;
   border:1px solid rgba(255,255,255,.045);
   border-radius:15px;
-  background:#080a0e;
+  background:#050607;
   box-shadow:0 1px 0 rgba(255,255,255,.018) inset;
 }
 .exercise .muscleFocusImg{
-  position:relative;
-  z-index:1;
   display:block;
   width:100%;
   height:100%;
   object-fit:contain;
   object-position:center;
-  filter:saturate(.58) contrast(1.26) brightness(.86);
+  filter:none;
 }
-.exercise .muscleFocus:after{
-  content:"";
-  position:absolute;
-  z-index:2;
-  inset:0;
-  pointer-events:none;
-  background:
-    linear-gradient(90deg,rgba(5,7,10,.34) 0%,rgba(5,7,10,.08) 16%,transparent 28%,transparent 72%,rgba(5,7,10,.08) 84%,rgba(5,7,10,.34) 100%),
-    radial-gradient(ellipse 54% 94% at 50% 53%,transparent 0 57%,rgba(5,7,10,.10) 70%,rgba(5,7,10,.42) 100%);
-  mix-blend-mode:multiply;
-}
+.exercise .muscleFocus:after{display:none!important}
 
 .similarPanel,.exerciseNotePanel{
   margin-top:10px;
@@ -213,9 +200,9 @@
   }
   .toolButton{min-height:29px;padding:5px 8px;font-size:8.5px}
   .exercise .muscleFocus{
-    height:158px;
+    height:220px;
     margin:12px -3px 2px;
-    padding:9px 10px;
+    padding:0;
   }
   .sets{
     grid-template-columns:25px minmax(0,1fr) minmax(0,1fr) 37px;
