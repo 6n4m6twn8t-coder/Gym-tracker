@@ -50,7 +50,7 @@ workout=function(){
 
 Promise.all(Object.entries(FILES).map(async([name,path])=>{
   try{
-    const r=await fetch(`${path}?v=6`,{cache:'no-store'});
+    const r=await fetch(`${path}?v=7`,{cache:'no-store'});
     if(!r.ok)throw new Error(`${r.status}`);
     const encoded=(await r.text()).trim();
     if(!encoded.startsWith('UklGR'))throw new Error('invalid WebP base64');
