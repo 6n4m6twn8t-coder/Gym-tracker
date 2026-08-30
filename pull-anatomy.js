@@ -22,6 +22,15 @@ if(!document.getElementById('pushAnatomyStyles')){
   document.head.appendChild(style);
 }
 
+const pullStyle=document.createElement('style');
+pullStyle.id='pullAnatomyStyles';
+pullStyle.textContent=`
+.pullMuscleFocus{background:#0b1113}
+.pullMuscleFocusImg{transform:scale(.86);transform-origin:center center}
+`;
+document.getElementById('pullAnatomyStyles')?.remove();
+document.head.appendChild(pullStyle);
+
 function decoratePullAnatomy(){
   if(!active||active.name!=='Pull'||!Array.isArray(active.exercises))return;
   document.querySelectorAll('.exercise').forEach((node,i)=>{
@@ -32,9 +41,9 @@ function decoratePullAnatomy(){
     const head=node.querySelector('.exerciseHead');
     if(!head)return;
     const panel=document.createElement('div');
-    panel.className='muscleFocus';
+    panel.className='muscleFocus pullMuscleFocus';
     const img=document.createElement('img');
-    img.className='muscleFocusImg';
+    img.className='muscleFocusImg pullMuscleFocusImg';
     img.src=src;
     img.alt=`${ex.name} muscle focus`;
     img.decoding='async';
